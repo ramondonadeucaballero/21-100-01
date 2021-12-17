@@ -59,13 +59,17 @@ def readESD():
     task.close()
     
     return value
+
+def storeValue():
+    valueESD=readESD()
+    print()
     
 def pieceDetection():
     global detected
     while True:
         if(detected):
-            valueESD=readESD()
-            print()
+            
+            
         
  
 
