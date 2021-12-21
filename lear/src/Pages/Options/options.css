@@ -1,0 +1,35 @@
+.options-div {
+  display: grid;
+  grid-template-columns: repeat(20, 1fr);
+}
+
+.config {
+  grid-column: 1/8;
+}
+
+.datos {
+  grid-column: 9/20;
+}
+
+.buttons {
+  display: flex;
+}
+
+.buttons > div {
+  color: white;
+  display: flex;
+  justify-content: center;
+  width: 2rem;
+  padding: 0.5rem 1rem;
+  border-radius: 10px;
+  margin: 0rem 1rem;
+}
+.start-button {
+  background-color: green;
+}
+.stop-button {
+  background-color: red;
+}
+.test-button {
+  background-color: blue;
+}

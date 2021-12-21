@@ -103,6 +103,7 @@ def storeData():
                 "Hum": 60,
             }
         }
+        print(data)
         json.append(data)
         client.write_points(json)   
     
@@ -143,9 +144,8 @@ def pieceDetection():
 # Reads the configuration file and then it's loaded into the script
 def loadConf():
     global readTimes
-    global machineName
-    
-    file = open("ESDconfig.txt","r")
+    global machineName    
+    file = open("flask-api\ESDconfig.txt","r")
     config=(file.read())
     config=config.split(":")
     machineName = config[0]
@@ -156,7 +156,7 @@ def loadConf():
 # ============ Stop Script ====================
 # Checks if the script must stop.
 def check_stop():
-    file = open("stop.txt","r")
+    file = open("flask-api\stop.txt","r")
     closed=(file.read())
     
     file.close()

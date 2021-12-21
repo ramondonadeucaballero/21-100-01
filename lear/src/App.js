@@ -1,13 +1,21 @@
 import Header from "./Components/header";
-
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Graphs from "./Pages/Graphs/graphs";
+import Options from "./Pages/Options/options";
 
 function App() {
   return (
-    <div className="App">      
-      <Header/>
-      <div className="appBody">
-      <iframe src="http://localhost:3000/d/mgHB9_t7k/new-dashboard?orgId=1&refresh=5s&from=1639999456065&to=1639999756065" width="100%" height="100%" frameborder="0"></iframe>
-    </div></div>
+    <Router>
+      <div className="App">
+        <Header />
+        <div className="appBody">
+          <Routes>
+            <Route exact path="/" element={<Graphs />} />
+            <Route path="/options" element={<Options />} />
+          </Routes>
+        </div>
+      </div>
+    </Router>
   );
 }
 
