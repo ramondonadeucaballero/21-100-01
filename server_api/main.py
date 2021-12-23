@@ -1,4 +1,6 @@
+import os
 from os import close, read
+from platform import machine
 from random import randint
 from sys import stdout
 import time
@@ -9,6 +11,10 @@ import threading
 from threading import Lock
 import nidaqmx
 from queue import Queue
+import numpy as np
+
+here = os.path.dirname(os.path.abspath(__file__))
+
 
 # ============= TESTING VALUES ==============
 detected = True
@@ -41,9 +47,9 @@ def readQR():
     #Value for testing, allows a repeat QR to be read.
     repeat = True
     while True and not stopThreads:
-        print("leo")
+        
         data = ser.readline()    
-        print("leido")
+        
         data = data.split(b"\n")[0]
         if(data != "ERROR\n"):     
             if(data!=lastdata or repeat):
@@ -101,7 +107,7 @@ def storeData():
                 "Line": machineName
             },
             "fields":{
-                "Estatica": (valueESD-1)*100, 
+                "Estatica": (valueESD), 
                 "QRCode": valueQR,
                 "Temp": 20,
                 "Hum": 60,
@@ -110,6 +116,32 @@ def storeData():
         json.append(data)
         print(data)
         client.write_points(json)   
+
+# ============ CPK Function ====================
+def cpk():
+    USL = 400
+    LSL = 0
+    pMean=200
+    
+    query = 'SELECT Estatica FROM Estatica WHERE time > now() - 7d AND Line=\''+machineName+'\'' 
+    result = client.query(query)
+    
+    data_list=[]
+    for measurement in result.get_points(measurement="Estatica"):
+        data_list.append(measurement["Estatica"])
+    
+    print(len(data_list))
+    standard_deviation = np.std(data_list)    
+    print(standard_deviation)
+    
+    cpl = (np.mean(data_list)-LSL)/(3*standard_deviation)
+    cpu=(USL-np.mean(data_list))/(3*standard_deviation)
+    
+    cpk=(min(cpl,cpu))
+    print(cpl)
+    print(cpu)
+    print(cpk)
+    
     
     
 # ============ Piece Detection Function ====================
@@ -120,7 +152,7 @@ def pieceDetection():
     
     if(not detectionConnected):
         while True and not stopThreads:
-            print(stopThreads)
+            
             time.sleep(1.1)
             if(detected):
                 start = time.time()
@@ -134,7 +166,7 @@ def pieceDetection():
 
         detectTask.start() 
         while True and not stopThreads:
-            print(stopThreads)
+            
             read = detectTask.read() 
             if(read > 5):
                 readESD()
@@ -149,22 +181,25 @@ def pieceDetection():
 # ============ Load Configuration ====================
 # Reads the configuration file and then it's loaded into the script
 def loadConf():
+    
     global readTimes
     global machineName    
-    file = open("server_api\ESDconfig.txt","r")
+    
+    file = open(os.path.join(here, 'ESDconfig.txt'))
+    
     config=(file.read())
     config=config.split(":")
     machineName = config[0]
     del config[0]
     readTimes=config
+    
     file.close()
     
 # ============ Stop Script ====================
 # Checks if the script must stop.
 def check_stop():
-    file = open("server_api\stop.txt","r")
-    closed=(file.read())
-    print(closed)
+    file = open(os.path.join(here, "stop.txt"))
+    closed=(file.read())  
     
     file.close()
     return closed  
@@ -172,21 +207,20 @@ def check_stop():
 
 # ====================== Main ======================     
 if __name__ == '__main__':
-    stopThreads = False
-    loadConf()
-    stdout.write("start")
-    readQRThread = threading.Thread(target=readQR)
-    readQRThread.start() 
+    stopThreads = False    
+    loadConf()    
+    cpk()
+    # readQRThread = threading.Thread(target=readQR)
+    # readQRThread.start()     
+    # detectionThread = threading.Thread(target=pieceDetection)
+    # detectionThread.start()  
     
-    detectionThread = threading.Thread(target=pieceDetection)
-    detectionThread.start()
+    # while check_stop() == "False":
+    #    time.sleep(1) 
     
-    while check_stop() == "False":
-       time.sleep(1) 
-       
-    client.close()
-    stopThreads = True
-    detectionThread.join()
-    readQRThread.join()
+    # client.close()
+    # stopThreads = True
+    # detectionThread.join()
+    # readQRThread.join()
     
      

@@ -38,16 +38,19 @@ app.get("/stop", async (req, res) => {
   res.sendStatus(200);
 });
 
-app.get("/start", async (req, res) => {
-  console.log("start");
+app.post("/start", (req, res) => {
+  const { config } = req.body;
+  console.log(config);
+  if (config != "null:") {
+    fs.writeFile("./ESDconfig.txt", config, (err) => {
+      if (err) console.log(err);
+    });
+  }
   fs.writeFile("./stop.txt", "False", (err) => {
     if (err) console.log(err);
   });
   const ls = spawn("python", ["main.py"]);
-  ls.stdout.on("data", (data) => {
-    console.log(data);
-  });
-  res.sendStatus(200);
+  res.sendStatus("200");
 });
 
 app.post("/saveconfig", async (req, res) => {

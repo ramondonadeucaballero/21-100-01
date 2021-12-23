@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import "./options.css";
 import Select from "react-select";
 import Axios from "axios";
+import axios from "axios";
 
 const Options = () => {
   const [configList, setConfigList] = useState([]);
@@ -133,8 +134,24 @@ const Options = () => {
           </div>
         </div>
         <div className="buttons">
-          <div className="start-button">Start</div>
-          <div className="stop-button">Stop</div>
+          <div
+            className="start-button"
+            onClick={() => {
+              axios.post("http://localhost:5000/start", {
+                config: dropdownSelect + ":" + lectTimes.join(":"),
+              });
+            }}
+          >
+            Start
+          </div>
+          <div
+            className="stop-button"
+            onClick={() => {
+              axios.get("http://localhost:5000/stop");
+            }}
+          >
+            Stop
+          </div>
           <div className="test-button">Test</div>
         </div>
       </div>
