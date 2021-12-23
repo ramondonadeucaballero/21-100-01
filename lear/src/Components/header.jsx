@@ -12,10 +12,10 @@ const Header = () => {
         className="options-button"
         onClick={() => {
           if (buttonState == "Opciones") {
-            history("/");
+            history("/options");
             setButtonState("Graficos");
           } else {
-            history("/options");
+            history("/");
             setButtonState("Opciones");
           }
         }}
