@@ -9,6 +9,9 @@ const Options = () => {
   const [dropdownSelect, setDropdownSelect] = useState(null);
   const [numLect, setNumLect] = useState();
   const [lectTimes, setLectTimes] = useState([]);
+  const [qrvalue, setQRvalue] = useState();
+  const [esdvalues, setESDvalues] = useState();
+  const [MedianESDValues, setMedian] = useState();
 
   const onDropdownChange = (value) => {
     setDropdownSelect(value["value"].split(":")[0]);
@@ -31,6 +34,10 @@ const Options = () => {
             value: data[i],
           });
         }
+        configList.push({
+          label: "Nueva Linea",
+          value: "Nueva Linea",
+        });
         setConfigList(configList);
       });
   };
@@ -63,6 +70,31 @@ const Options = () => {
         });
       }
     }
+  };
+
+  const testButton = () => {
+    setQRvalue("");
+    setESDvalues([""]);
+    setMedian();
+    axios
+      .post("http://localhost:5000/test", {
+        config: dropdownSelect + ":" + lectTimes.join(":"),
+      })
+      .then((res) => {
+        axios.get("http://localhost:5000/qrvalues").then((res) => {
+          setQRvalue(res["data"]);
+        });
+        axios.get("http://localhost:5000/esdvalues").then((res) => {
+          var media = 0;
+          var valores = "";
+          for (var i in res["data"]) {
+            valores = valores + res["data"][i] + "\n";
+            media = media + parseFloat(res["data"][i]);
+          }
+          setESDvalues(valores);
+          setMedian(media / res["data"].length);
+        });
+      });
   };
 
   function crear_tiempos() {
@@ -124,13 +156,15 @@ const Options = () => {
       <div className="datos">
         <div className="valores">
           <div className="QR Code">
-            <div className="title-field">Codigo QR: </div>
+            <div className="title-field">Codigo QR: {qrvalue}</div>
           </div>
           <div className="lecturas-view">
-            <div className="title-field">Lecturas: </div>
+            <div className="title-field">Lecturas: {esdvalues} </div>
           </div>
           <div className="Valor Final">
-            <div className="title-field">Media de Lecturas: </div>
+            <div className="title-field">
+              Media de Lecturas: {MedianESDValues}
+            </div>
           </div>
         </div>
         <div className="buttons">
@@ -152,7 +186,14 @@ const Options = () => {
           >
             Stop
           </div>
-          <div className="test-button">Test</div>
+          <div
+            className="test-button"
+            onClick={() => {
+              testButton();
+            }}
+          >
+            Test
+          </div>
         </div>
       </div>
     </div>

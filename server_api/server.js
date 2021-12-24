@@ -31,6 +31,28 @@ app.get("/config", async (req, res) => {
   });
 });
 
+app.get("/qrvalues", async (req, res) => {
+  fs.readFile("./QRtest.txt", "utf-8", (err, data) => {
+    if (err) {
+      console.log(err);
+      return;
+    } else {
+      res.json(data);
+    }
+  });
+});
+
+app.get("/esdvalues", async (req, res) => {
+  fs.readFile("./ESDtest.txt", "utf-8", (err, data) => {
+    if (err) {
+      console.log(err);
+      return;
+    } else {
+      res.json(data.split(":"));
+    }
+  });
+});
+
 app.get("/stop", async (req, res) => {
   fs.writeFile("./stop.txt", "True", (err) => {
     if (err) console.log(err);
@@ -40,7 +62,6 @@ app.get("/stop", async (req, res) => {
 
 app.post("/start", (req, res) => {
   const { config } = req.body;
-  console.log(config);
   if (config != "null:") {
     fs.writeFile("./ESDconfig.txt", config, (err) => {
       if (err) console.log(err);
@@ -53,30 +74,43 @@ app.post("/start", (req, res) => {
   res.sendStatus("200");
 });
 
+app.post("/test", (req, res) => {
+  const { config } = req.body;
+  if (config != "null:") {
+    fs.writeFile("./ESDconfig.txt", config, (err) => {
+      if (err) console.log(err);
+    });
+  }
+  fs.writeFile("./QRtest.txt", " ", (err) => {
+    if (err) console.log(err);
+  });
+  fs.writeFile("./ESDtest.txt", " ", (err) => {
+    if (err) console.log(err);
+  });
+  const ls = spawn("python", ["test.py"]);
+  ls.on("exit", function () {
+    res.sendStatus(200);
+  });
+});
+
 app.post("/saveconfig", async (req, res) => {
   const { newConfig } = req.body;
-  console.log("saveconfig recibido");
   fs.readFile("./ESDconfigstored.txt", "utf-8", (err, data) => {
     if (err) {
       console.log(err);
       return;
     } else {
-      console.log("else");
       data = data.split("\r\n");
       for (let i = 0; i < data.length; i++) {
-        console.log("for");
         if (data[i].split(":")[0] == newConfig.split(":")[0]) {
           data[i] = newConfig;
         }
       }
-      console.log("end for");
       data = data.join("\r\n");
-      console.log("write");
       fs.writeFile("./ESDconfigstored.txt", data, (err) => {
         if (err) console.log(err);
       });
-      console.log("end write");
-      res.send(200);
+      res.sendStatus(200);
     }
   });
 });
