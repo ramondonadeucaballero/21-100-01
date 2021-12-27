@@ -7,7 +7,6 @@ import time
 from influxdb.resultset import ResultSet
 import serial
 from serial import Serial
-from influxdb import InfluxDBClient
 import threading
 from threading import Lock
 import nidaqmx
@@ -24,10 +23,22 @@ detectionConnected = False
 
 
 # ============= SERIAL VALUES ===============
-client = InfluxDBClient(host='localhost',port=8086, username='admin', password='P12345wd!', database='Lear')
+from datetime import datetime
+
+from influxdb_client import InfluxDBClient, Point, WritePrecision
+from influxdb_client.client.write_api import SYNCHRONOUS
+
+# You can generate a Token from the "Tokens Tab" in the UI
+token = "fvTPrLYRPDOFEEA7ODqRYzSTPEiAYeZC1lgeswMW9hxO1yYu6YOS4FMU2UUhn559a6CpAf5FzlDdqzF4tWKA0A=="
+org = "e7"
+bucket = "Lear"
+
+client = InfluxDBClient(url="http://localhost:8086", token=token)
 
 ser = serial.Serial('COM3', 9600)
 
+write_api = client.write_api(write_options=SYNCHRONOUS)
+query_api = client.query_api()
 # ============ GLOBAL VALUES ================
 QRList = Queue()
 ESDList = Queue()
@@ -93,31 +104,20 @@ def storeData():
         valueQR=QRList.get()
         QRListLock.release()
         valueESD=ESDList.get()
-        json = []
-        data = {
-            "measurement": "Estatica",
-            "tags": {
-                "Line": machineName
-            },
-            "fields":{
-                "Estatica": (valueESD),
-                "QRCode": valueQR,
-                "Temp": 20,
-                "Hum": 60,
-            }
-        }
-        json.append(data)
-        client.write_points(json)
+        point = Point("Estatica").tag("Line", machineName).field("Estatica", valueESD).field("QRCode", str(valueQR))
+        write_api.write(bucket, org, point)
 
 # ============ CPK Function ====================
 def cpk():
     while True and not stopThreads:
-        time.sleep(10)
+        time.sleep(1)
         USL = 100
         LSL = -100
 
-        query = 'SELECT Estatica FROM Estatica WHERE time > now() - 1d AND Line=\''+machineName+'\''
-        result = client.query(query)
+        query = 'from(bucket:"{bucket}") |> range(start: -1d) filter(fn:(r) => r._measurement == "cpk" filter(fn:(r) => r.Line== "'+machineName+'")'
+        tables = client.query_api().query(query, org=org)
+        
+        print(tables)
         if(len(result)):
             data_list=[]
             for measurement in result.get_points(measurement="Estatica"):
@@ -139,8 +139,9 @@ def cpk():
                     "cpk": cpk
                 }
             }
-            json.append(data)
-            client.write_points(json)
+            point = Point("CPK").tag("Line", machineName).field("cpk", cpk)
+            write_api.write(bucket, org, point)
+            
 
 
 
@@ -160,8 +161,7 @@ def pieceDetection():
             time.sleep(1.1)
             if(detected):
                 start = time.time()
-                readESD()
-
+                readESD(detectTask)
                 storeData()
 
     else:
@@ -172,7 +172,6 @@ def pieceDetection():
         while True and not stopThreads:
             time.sleep(0.5)
             read = detectTask.read()
-            print(read)
             if(read[0] > 5):
                 readESD(detectTask)
                 storeData()
@@ -203,7 +202,7 @@ def loadConf():
 # ============ Stop Script ====================
 # Checks if the script must stop.
 def check_stop():
-    file = open(os.path.join(here, "stop.txt"))
+    file = open(os.path.join(here, "running.txt"))
     closed=(file.read())
 
     file.close()
@@ -221,7 +220,7 @@ if __name__ == '__main__':
     cpkThread = threading.Thread(target=cpk)
     cpkThread.start()
 
-    while check_stop() == "False":
+    while check_stop() == "True":
        time.sleep(1)
 
     client.close()

@@ -10,8 +10,9 @@ const Options = () => {
   const [numLect, setNumLect] = useState();
   const [lectTimes, setLectTimes] = useState([]);
   const [qrvalue, setQRvalue] = useState();
-  const [esdvalues, setESDvalues] = useState();
+  const [esdvalues, setESDvalues] = useState([]);
   const [MedianESDValues, setMedian] = useState();
+  const [ScriptRunning, setScriptRunning] = useState();
 
   const onDropdownChange = (value) => {
     setDropdownSelect(value["value"].split(":")[0]);
@@ -25,7 +26,7 @@ const Options = () => {
   };
 
   const getConfig = async () => {
-    fetch("http://localhost:5000/config")
+    fetch("http://127.1.1.1:5000/config")
       .then((response) => response.json())
       .then((data) => {
         for (let i = 0; i < data.length; i++) {
@@ -41,8 +42,17 @@ const Options = () => {
         setConfigList(configList);
       });
   };
+
+  const status = async () => {
+    console.log(esdvalues);
+    axios.get("http://127.1.1.1:5000/status").then((res) => {
+      setScriptRunning(res["data"]);
+    });
+  };
+
   useEffect(() => {
     getConfig();
+    status();
   }, []);
 
   const changeNumLect = async (e) => {
@@ -58,14 +68,10 @@ const Options = () => {
             newConfig.push(newConfig[newConfig.length - 1]);
           }
         }
-        console.log("queu");
         setLectTimes(newConfig);
-        console.log("newconfig" + newConfig);
         configList[i]["value"] = dropdownSelect + ":" + newConfig.join(":");
-        console.log(configList);
         setConfigList(configList);
-        console.log("sendreq");
-        Axios.post("http://localhost:5000/saveconfig", {
+        Axios.post("http://127.1.1.1:5000/saveconfig", {
           newConfig: dropdownSelect + ":" + newConfig.join(":"),
         });
       }
@@ -77,22 +83,23 @@ const Options = () => {
     setESDvalues([""]);
     setMedian();
     axios
-      .post("http://localhost:5000/test", {
+      .post("http://127.1.1.1:5000/test", {
         config: dropdownSelect + ":" + lectTimes.join(":"),
       })
       .then((res) => {
-        axios.get("http://localhost:5000/qrvalues").then((res) => {
+        axios.get("http://127.1.1.1:5000/qrvalues").then((res) => {
           setQRvalue(res["data"]);
         });
-        axios.get("http://localhost:5000/esdvalues").then((res) => {
+        axios.get("http://127.1.1.1:5000/esdvalues").then((res) => {
           var media = 0;
           var valores = "";
           for (var i in res["data"]) {
-            valores = valores + res["data"][i] + "\n";
             media = media + parseFloat(res["data"][i]);
           }
-          setESDvalues(valores);
+          console.log(typeof valores);
+          setESDvalues(res["data"]);
           setMedian(media / res["data"].length);
+          setScriptRunning("False");
         });
       });
   };
@@ -108,9 +115,8 @@ const Options = () => {
               if (configList[i]["label"] == dropdownSelect) {
                 configList[i]["value"] =
                   dropdownSelect + ":" + lectTimes.join(":");
-                console.log(configList);
                 setConfigList(configList);
-                Axios.post("http://localhost:5000/saveconfig", {
+                Axios.post("http://127.1.1.1:5000/saveconfig", {
                   newConfig: dropdownSelect + ":" + lectTimes.join(":"),
                 });
               }
@@ -159,7 +165,18 @@ const Options = () => {
             <div className="title-field">Codigo QR: {qrvalue}</div>
           </div>
           <div className="lecturas-view">
-            <div className="title-field">Lecturas: {esdvalues} </div>
+            <div className="title-field">
+              Lecturas:{" "}
+              <div className="lect-individual">
+                {esdvalues.map((lectura, index) => (
+                  <div className="lectrow">
+                    <div className="lectname" id={index}>
+                      Lectura {index + 1} : {lectura}{" "}
+                    </div>
+                  </div>
+                ))}
+              </div>{" "}
+            </div>
           </div>
           <div className="Valor Final">
             <div className="title-field">
@@ -170,26 +187,46 @@ const Options = () => {
         <div className="buttons">
           <div
             className="start-button"
+            className={
+              ScriptRunning == "False" ? "start-button" : "unclickable-button"
+            }
             onClick={() => {
-              axios.post("http://localhost:5000/start", {
-                config: dropdownSelect + ":" + lectTimes.join(":"),
-              });
+              if (ScriptRunning == "False") {
+                console.log("entro");
+                setScriptRunning("True");
+                axios.post("http://127.1.1.1:5000/start", {
+                  config: dropdownSelect + ":" + lectTimes.join(":"),
+                });
+              }
             }}
           >
             Start
           </div>
           <div
             className="stop-button"
+            className={
+              ScriptRunning == "True" ? "stop-button" : "unclickable-button"
+            }
             onClick={() => {
-              axios.get("http://localhost:5000/stop");
+              if (ScriptRunning == "True") {
+                console.log("entro");
+                axios.get("http://127.1.1.1:5000/stop");
+                setScriptRunning("False");
+              }
             }}
           >
             Stop
           </div>
           <div
-            className="test-button"
+            className={
+              ScriptRunning == "False" ? "test-button" : "unclickable-button"
+            }
             onClick={() => {
-              testButton();
+              if (ScriptRunning == "False") {
+                console.log("entro");
+                setScriptRunning("Test");
+                testButton();
+              }
             }}
           >
             Test

@@ -54,20 +54,34 @@ app.get("/esdvalues", async (req, res) => {
 });
 
 app.get("/stop", async (req, res) => {
-  fs.writeFile("./stop.txt", "True", (err) => {
+  console.log("Stop");
+  fs.writeFile("./running.txt", "False", (err) => {
     if (err) console.log(err);
   });
   res.sendStatus(200);
 });
 
+app.get("/status", (req, res) => {
+  fs.readFile("./running.txt", "utf-8", (err, data) => {
+    if (err) {
+      console.log(err);
+      return;
+    } else {
+      console.log(data);
+      res.send(data);
+    }
+  });
+});
+
 app.post("/start", (req, res) => {
   const { config } = req.body;
+  console.log("Start");
   if (config != "null:") {
     fs.writeFile("./ESDconfig.txt", config, (err) => {
       if (err) console.log(err);
     });
   }
-  fs.writeFile("./stop.txt", "False", (err) => {
+  fs.writeFile("./running.txt", "True", (err) => {
     if (err) console.log(err);
   });
   const ls = spawn("python", ["main.py"]);
@@ -76,6 +90,7 @@ app.post("/start", (req, res) => {
 
 app.post("/test", (req, res) => {
   const { config } = req.body;
+  console.log("test");
   if (config != "null:") {
     fs.writeFile("./ESDconfig.txt", config, (err) => {
       if (err) console.log(err);
@@ -117,4 +132,7 @@ app.post("/saveconfig", async (req, res) => {
 
 app.listen(5000, () => {
   console.log("Server has started on port 5000");
+  fs.writeFile("./running.txt", "False", (err) => {
+    if (err) console.log(err);
+  });
 });

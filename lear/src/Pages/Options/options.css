@@ -33,3 +33,6 @@
 .test-button {
   background-color: blue;
 }
+.unclickable-button {
+  background-color: var(--unclickable);
+}

@@ -1,15 +1,20 @@
-body{
+body {
   overflow: hidden;
-  margin:0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
 }
 
-:root{
+:root {
   --primary: #3278cd;
   --secondary: #d3d3d3;
+  --red: red;
+  --unclickable: lightgrey;
+  --green: green;
+  --blue: blue;
 }
 
-.appBody{
+.appBody {
   height: calc(100vh - 4.375rem);
   width: auto;
 }
@@ -18,9 +23,6 @@ body{
   display: none !important;
 }
 
-.grafana-app{
+.grafana-app {
   visibility: hidden;
 }
-
-
-
