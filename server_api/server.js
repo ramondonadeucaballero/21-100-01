@@ -7,6 +7,7 @@ const spawn = require("child_process").spawn;
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const session = require("express-session");
+const path = require("path");
 
 app.use(
   cors({
@@ -21,11 +22,13 @@ app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.get("/config", async (req, res) => {
+  console.log("ei");
   fs.readFile("./ESDconfigstored.txt", "utf-8", (err, data) => {
     if (err) {
       console.log(err);
       return;
     } else {
+      res.header("Access-Control-Allow-Origin", "*");
       res.json(data.split("\r\n"));
     }
   });
@@ -54,7 +57,6 @@ app.get("/esdvalues", async (req, res) => {
 });
 
 app.get("/stop", async (req, res) => {
-  console.log("Stop");
   fs.writeFile("./running.txt", "False", (err) => {
     if (err) console.log(err);
   });
@@ -73,9 +75,16 @@ app.get("/status", (req, res) => {
   });
 });
 
+app.get("/file", (req, res) => {
+  var options = {
+    root: path.join(__dirname),
+  };
+  res.set("Content-Disposition", "inline");
+  res.download("test.csv");
+});
+
 app.post("/start", (req, res) => {
   const { config } = req.body;
-  console.log("Start");
   if (config != "null:") {
     fs.writeFile("./ESDconfig.txt", config, (err) => {
       if (err) console.log(err);
@@ -90,7 +99,6 @@ app.post("/start", (req, res) => {
 
 app.post("/test", (req, res) => {
   const { config } = req.body;
-  console.log("test");
   if (config != "null:") {
     fs.writeFile("./ESDconfig.txt", config, (err) => {
       if (err) console.log(err);
@@ -115,6 +123,7 @@ app.post("/saveconfig", async (req, res) => {
       console.log(err);
       return;
     } else {
+      console.log(data);
       data = data.split("\r\n");
       for (let i = 0; i < data.length; i++) {
         if (data[i].split(":")[0] == newConfig.split(":")[0]) {
@@ -127,6 +136,62 @@ app.post("/saveconfig", async (req, res) => {
       });
       res.sendStatus(200);
     }
+  });
+});
+
+app.post("/exists", (req, res) => {
+  const { newName } = req.body;
+  fs.readFile("./ESDconfigstored.txt", "utf-8", (err, data) => {
+    if (err) {
+      console.log(err);
+      return;
+    } else {
+      data = data.split("\r\n");
+      for (let i = 0; i < data.length; i++) {
+        if (data[i].split(":")[0] == newName) {
+          res.send("true");
+          return;
+        }
+      }
+      res.send("false");
+    }
+  });
+});
+
+app.post("/newLine", (req, res) => {
+  const { newName } = req.body;
+  fs.readFile("./ESDconfigstored.txt", "utf-8", (err, data) => {
+    if (err) {
+      console.log(err);
+      return;
+    } else {
+      data = data + ("\r\n" + newName + ":");
+      fs.writeFile("./ESDconfigstored.txt", data, (err) => {
+        if (err) console.log(err);
+      });
+      res.sendStatus(200);
+    }
+  });
+});
+
+app.post("/deleteLine", (req, res) => {
+  const { newConfig } = req.body;
+  fs.writeFile("./ESDconfigstored.txt", newConfig.join("\r\n"), (err) => {
+    if (err) console.log(err);
+  });
+  res.sendStatus(200);
+});
+
+app.post("/newname", (req, res) => {
+  const { newName } = req.body;
+  console.log(req.body);
+  let config = [];
+  for (let i = 0; i < newConfig.length; i++) {
+    config.push(newConfig[i]["value"]);
+  }
+  console.log(config);
+  fs.writeFile("./ESDconfigstored.txt", config.join("\r\n"), (err) => {
+    if (err) console.log(err);
   });
 });
 

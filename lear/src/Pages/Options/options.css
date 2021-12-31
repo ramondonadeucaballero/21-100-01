@@ -33,6 +33,28 @@
 .test-button {
   background-color: blue;
 }
+.downloadButton {
+  background-color: var(--primary);
+}
 .unclickable-button {
   background-color: var(--unclickable);
+}
+.deleteLine {
+  color: white;
+  display: flex;
+  justify-content: center;
+  width: auto;
+  padding: 0.5rem 1rem;
+  border-radius: 10px;
+  background-color: red;
+}
+
+.createLine {
+  color: white;
+  display: flex;
+  justify-content: center;
+  width: auto;
+  padding: 0.5rem 1rem;
+  border-radius: 10px;
+  background-color: var(--primary);
 }

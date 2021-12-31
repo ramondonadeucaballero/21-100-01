@@ -12,6 +12,8 @@ body {
   --unclickable: lightgrey;
   --green: green;
   --blue: blue;
+  --white: white;
+  --danger: #eb3f27;
 }
 
 .appBody {

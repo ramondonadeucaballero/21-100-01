@@ -29,8 +29,8 @@ from influxdb_client import InfluxDBClient, Point, WritePrecision
 from influxdb_client.client.write_api import SYNCHRONOUS
 
 # You can generate a Token from the "Tokens Tab" in the UI
-token = "fvTPrLYRPDOFEEA7ODqRYzSTPEiAYeZC1lgeswMW9hxO1yYu6YOS4FMU2UUhn559a6CpAf5FzlDdqzF4tWKA0A=="
-org = "e7"
+token = "sb1mNiKmHmo-SUKLXTgJQDCBxGPFPL5lNQ0CnFCLubdiGKFhBicyOdVpIpqq3OWi5Hew83-4-wy-DAtx6rcnGw=="
+org = "E7"
 bucket = "Lear"
 
 client = InfluxDBClient(url="http://localhost:8086", token=token)
@@ -59,16 +59,21 @@ def readQR():
     #Value for testing, allows a repeat QR to be read.
     repeat = True
     while True and not stopThreads:
-
+        if(check_stop() == "False"):
+            return
+        if(repeat):
+            time.sleep(1)
+        
         data = ser.readline()
 
         data = data.split(b"\n")[0]
-        if(data != "ERROR\n"):
+        if(data != "ERROR"):
             if(data!=lastdata or repeat):
                 lastdata=data
                 QRListLock.acquire()
                 QRList.put(data)
                 QRListLock.release()
+        
 
 
 # ============ ESD READER FUNCITON ====================
@@ -82,9 +87,7 @@ def readESD(detectTask):
         for timeValue in readTimes:
             time.sleep(float(timeValue))
             read = detectTask.read()
-            print(read)
             value = value + read[1]
-
 
         value = value / len(readTimes)
         value=(value-3)*200
@@ -102,26 +105,30 @@ def storeData():
     if(QRList.qsize() != 0):
         QRListLock.acquire()
         valueQR=QRList.get()
+        valueQR=valueQR.decode('UTF-8')
         QRListLock.release()
         valueESD=ESDList.get()
-        point = Point("Estatica").tag("Line", machineName).field("Estatica", valueESD).field("QRCode", str(valueQR))
+        point = Point("Estatica").tag("Line", machineName).field("Estatica", valueESD).field("QR", valueQR).tag("QRCode", str(valueQR))
+       
         write_api.write(bucket, org, point)
 
 # ============ CPK Function ====================
 def cpk():
     while True and not stopThreads:
+        if(check_stop()  == "False"):
+            return
         time.sleep(1)
         USL = 100
         LSL = -100
 
-        query = 'from(bucket:"{bucket}") |> range(start: -1d) filter(fn:(r) => r._measurement == "cpk" filter(fn:(r) => r.Line== "'+machineName+'")'
+        query = f'from(bucket:"{bucket}") |> range(start: -1d) |> filter(fn: (r) => r._measurement == "Estatica" and r._field == "Estatica" and r.Line == "'+machineName+'")'
         tables = client.query_api().query(query, org=org)
         
-        print(tables)
-        if(len(result)):
+        if(len(tables)):
             data_list=[]
-            for measurement in result.get_points(measurement="Estatica"):
-                data_list.append(measurement["Estatica"])
+            for x in range(len(tables)):
+                for x in tables[x]:
+                    data_list.append(x["_value"])
 
             standard_deviation = np.std(data_list)
 
@@ -129,16 +136,6 @@ def cpk():
             cpu=(USL-np.mean(data_list))/(3*standard_deviation)
 
             cpk=(min(cpl,cpu))
-            json = []
-            data = {
-                "measurement": "CPK",
-                "tags": {
-                    "Line": machineName
-                },
-                "fields":{
-                    "cpk": cpk
-                }
-            }
             point = Point("CPK").tag("Line", machineName).field("cpk", cpk)
             write_api.write(bucket, org, point)
             
@@ -157,7 +154,8 @@ def pieceDetection():
 
         detectTask.start()
         while True and not stopThreads:
-
+            if(check_stop()  == "False"):
+                return
             time.sleep(1.1)
             if(detected):
                 start = time.time()
@@ -171,7 +169,11 @@ def pieceDetection():
         detectTask.start()
         while True and not stopThreads:
             time.sleep(0.5)
-            read = detectTask.read()
+            read = detectTask.read() 
+            if(check_stop()  == "False"):
+                return           
+            if(check_stop() ):
+                return
             if(read[0] > 5):
                 readESD(detectTask)
                 storeData()
@@ -201,7 +203,7 @@ def loadConf():
 
 # ============ Stop Script ====================
 # Checks if the script must stop.
-def check_stop():
+def check_stop() :
     file = open(os.path.join(here, "running.txt"))
     closed=(file.read())
 
@@ -220,12 +222,9 @@ if __name__ == '__main__':
     cpkThread = threading.Thread(target=cpk)
     cpkThread.start()
 
-    while check_stop() == "True":
+    while check_stop()  == "True":
        time.sleep(1)
 
     client.close()
     stopThreads = True
-    detectionThread.join()
-    readQRThread.join()
-    cpkThread.join()
 

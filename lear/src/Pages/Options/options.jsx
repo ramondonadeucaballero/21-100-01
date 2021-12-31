@@ -3,8 +3,13 @@ import "./options.css";
 import Select from "react-select";
 import Axios from "axios";
 import axios from "axios";
+import Popup from "../../Components/Popup/popup.jsx";
+import { Button } from "../../Components/Buttons/Button/Button";
 
 const Options = () => {
+  const [openCreate, setCreate] = useState(false);
+  const [newNameMsg, setNewNameMsg] = useState("");
+  const [value, setValue] = useState("");
   const [configList, setConfigList] = useState([]);
   const [dropdownSelect, setDropdownSelect] = useState(null);
   const [numLect, setNumLect] = useState();
@@ -13,9 +18,15 @@ const Options = () => {
   const [esdvalues, setESDvalues] = useState([]);
   const [MedianESDValues, setMedian] = useState();
   const [ScriptRunning, setScriptRunning] = useState();
+  const [newName, setName] = useState();
+
+  const FileSaver = require("file-saver");
+  const FileDownload = require("js-file-download");
+  axios.defaults.headers.common["Acces-Control-Allow-Origin"] = "*";
 
   const onDropdownChange = (value) => {
     setDropdownSelect(value["value"].split(":")[0]);
+    setValue("Line4");
     let config = value["value"].split(":");
     setNumLect(config.length - 1);
     let auxTimes = [];
@@ -26,26 +37,21 @@ const Options = () => {
   };
 
   const getConfig = async () => {
-    fetch("http://127.1.1.1:5000/config")
-      .then((response) => response.json())
-      .then((data) => {
-        for (let i = 0; i < data.length; i++) {
-          configList.push({
-            label: data[i].split(":")[0],
-            value: data[i],
-          });
-        }
-        configList.push({
-          label: "Nueva Linea",
-          value: "Nueva Linea",
+    axios.get("http://192.168.23.192:5000/config").then((res) => {
+      let newConfig = [];
+      for (let i = 0; i < res.data.length; i++) {
+        newConfig.push({
+          label: res.data[i].split(":")[0],
+          value: res.data[i],
         });
-        setConfigList(configList);
-      });
+      }
+      setConfigList(newConfig);
+    });
   };
 
   const status = async () => {
     console.log(esdvalues);
-    axios.get("http://127.1.1.1:5000/status").then((res) => {
+    axios.get("http://192.168.23.192:5000/status").then((res) => {
       setScriptRunning(res["data"]);
     });
   };
@@ -71,7 +77,7 @@ const Options = () => {
         setLectTimes(newConfig);
         configList[i]["value"] = dropdownSelect + ":" + newConfig.join(":");
         setConfigList(configList);
-        Axios.post("http://127.1.1.1:5000/saveconfig", {
+        Axios.post("http://192.168.23.192:5000/saveconfig", {
           newConfig: dropdownSelect + ":" + newConfig.join(":"),
         });
       }
@@ -83,14 +89,14 @@ const Options = () => {
     setESDvalues([""]);
     setMedian();
     axios
-      .post("http://127.1.1.1:5000/test", {
+      .post("http://192.168.23.192:5000/test", {
         config: dropdownSelect + ":" + lectTimes.join(":"),
       })
       .then((res) => {
-        axios.get("http://127.1.1.1:5000/qrvalues").then((res) => {
+        axios.get("http://192.168.23.192:5000/qrvalues").then((res) => {
           setQRvalue(res["data"]);
         });
-        axios.get("http://127.1.1.1:5000/esdvalues").then((res) => {
+        axios.get("http://192.168.23.192:5000/esdvalues").then((res) => {
           var media = 0;
           var valores = "";
           for (var i in res["data"]) {
@@ -116,7 +122,7 @@ const Options = () => {
                 configList[i]["value"] =
                   dropdownSelect + ":" + lectTimes.join(":");
                 setConfigList(configList);
-                Axios.post("http://127.1.1.1:5000/saveconfig", {
+                Axios.post("http://192.168.23.192:5000/saveconfig", {
                   newConfig: dropdownSelect + ":" + lectTimes.join(":"),
                 });
               }
@@ -129,21 +135,76 @@ const Options = () => {
       </div>
     ));
   }
+
+  const eliminar_tiempo = () => {
+    let newConfig = [];
+    for (let i = 0; i < configList.length; i++) {
+      if (configList[i]["label"] == dropdownSelect) {
+        configList.splice(i, 1);
+        console.log("imin");
+      }
+      newConfig.push(configList[i]["value"]);
+    }
+
+    Axios.post("http://192.168.23.192:5000/deleteline", {
+      newConfig: newConfig,
+    });
+    setConfigList(configList);
+    setDropdownSelect("a");
+  };
+
   return (
     <div className="options-div">
-      <button
-        onClick={() => {
-          console.log(configList);
-          console.log(numLect);
-          console.log(lectTimes);
-          console.log(dropdownSelect);
+      <Popup
+        trigger={openCreate}
+        closeButton={() => {
+          setCreate(false);
         }}
       >
-        test
-      </button>
+        <h1>Crear Nueva Linea</h1>
+        <div className="newline">
+          <div className="title-field">Nombre: </div>
+          <input
+            className="value-field"
+            pattern="[A-Za-z0-9]"
+            onInput={(e) => {
+              setName(e.target.value.replace(/:/g, " "));
+              Axios.post("http://192.168.23.192:5000/exists", {
+                newName: e.target.value.replace(/:/g, " "),
+              }).then((res) => {
+                if (res.data) {
+                  setNewNameMsg("Este nombre ya existe");
+                } else {
+                  setNewNameMsg(null);
+                }
+              });
+            }}
+          />
+          <div className="nameMsgError">{newNameMsg}</div>
+        </div>
+        <Button
+          buttonSize={"btn--small"}
+          onClick={() => {
+            Axios.post("http://192.168.23.192:5000/exists", {
+              newName: newName,
+            }).then((res) => {
+              if (res.data == false) {
+                Axios.post("http://192.168.23.192:5000/newLine", {
+                  newName: newName,
+                });
+                setNewNameMsg("Linea Creada");
+                setConfigList([]);
+                getConfig();
+              }
+            });
+          }}
+        >
+          Crear
+        </Button>
+      </Popup>
       <div className="config">
         <div className="select-linia">
-          <div className="title-field">Linia de Produccion</div>
+          <div className="title-field">Linea de Produccion</div>
           <Select options={configList} onChange={onDropdownChange}></Select>
         </div>
         <div className="nlecturas">
@@ -158,6 +219,24 @@ const Options = () => {
           <div className="title-field">Tiempo de cada Lectura</div>
           <div className="times-box">{crear_tiempos()}</div>
         </div>
+        <div
+          className="createLine"
+          onClick={() => {
+            setCreate(true);
+          }}
+        >
+          Crear Linea
+        </div>
+        {dropdownSelect != null ? (
+          <div
+            className="deleteLine"
+            onClick={() => {
+              eliminar_tiempo();
+            }}
+          >
+            Eliminar Linea
+          </div>
+        ) : null}
       </div>
       <div className="datos">
         <div className="valores">
@@ -194,7 +273,7 @@ const Options = () => {
               if (ScriptRunning == "False") {
                 console.log("entro");
                 setScriptRunning("True");
-                axios.post("http://127.1.1.1:5000/start", {
+                axios.post("http://192.168.23.192:5000/start", {
                   config: dropdownSelect + ":" + lectTimes.join(":"),
                 });
               }
@@ -210,7 +289,7 @@ const Options = () => {
             onClick={() => {
               if (ScriptRunning == "True") {
                 console.log("entro");
-                axios.get("http://127.1.1.1:5000/stop");
+                axios.get("http://192.168.23.192:5000/stop");
                 setScriptRunning("False");
               }
             }}
@@ -223,13 +302,29 @@ const Options = () => {
             }
             onClick={() => {
               if (ScriptRunning == "False") {
-                console.log("entro");
                 setScriptRunning("Test");
                 testButton();
               }
             }}
           >
             Test
+          </div>
+          <div
+            className="downloadButton"
+            onClick={() => {
+              Axios({
+                url: "http://192.168.23.192:5000/file",
+                method: "GET",
+                responseType: "blob",
+              }).then((response) => {
+                var myFile = new Blob([response.data], {
+                  type: "text/csv",
+                });
+                FileSaver.saveAs(myFile, "as.csv");
+              });
+            }}
+          >
+            Descargar
           </div>
         </div>
       </div>
