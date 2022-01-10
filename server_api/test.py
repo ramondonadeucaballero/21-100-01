@@ -13,7 +13,7 @@ here = os.path.dirname(os.path.abspath(__file__))
 
 def readQR():
     data = ser.readline()
-    data = data.split(b"\n")[0]
+    data = data.split(b"\n")[0].decode()
     f= open(os.path.join(here, 'QRtest.txt'), 'w')
     f.write(str(data))
     f.close()

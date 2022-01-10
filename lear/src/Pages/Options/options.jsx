@@ -24,6 +24,13 @@ const Options = () => {
   const FileDownload = require("js-file-download");
   axios.defaults.headers.common["Acces-Control-Allow-Origin"] = "*";
 
+  const customstyle = {
+    option: (provided, state) => ({
+      ...provided,
+      border: state.isFocused ? "red" : "green",
+    }),
+  };
+
   const onDropdownChange = (value) => {
     setDropdownSelect(value["value"].split(":")[0]);
     setValue("Line4");
@@ -115,6 +122,7 @@ const Options = () => {
       <div className="time-box" key={index + dropdownSelect}>
         <div className="time-field">T{index}</div>
         <input
+          className="value-field"
           onChange={(e) => {
             lectTimes[index] = e.target.value;
             for (let i = 0; i < configList.length; i++) {
@@ -141,133 +149,139 @@ const Options = () => {
     for (let i = 0; i < configList.length; i++) {
       if (configList[i]["label"] == dropdownSelect) {
         configList.splice(i, 1);
-        console.log("imin");
       }
-      newConfig.push(configList[i]["value"]);
+      if (i < configList.length) {
+        newConfig.push(configList[i]["value"]);
+      }
     }
 
     Axios.post("http://192.168.23.192:5000/deleteline", {
       newConfig: newConfig,
     });
+
+    window.location.reload();
     setConfigList(configList);
-    setDropdownSelect("a");
   };
 
   return (
-    <div className="options-div">
-      <Popup
-        trigger={openCreate}
-        closeButton={() => {
-          setCreate(false);
-        }}
-      >
-        <h1>Crear Nueva Linea</h1>
-        <div className="newline">
-          <div className="title-field">Nombre: </div>
-          <input
-            className="value-field"
-            pattern="[A-Za-z0-9]"
-            onInput={(e) => {
-              setName(e.target.value.replace(/:/g, " "));
+    <div className="filldivh">
+      <div className="options-div">
+        <Popup
+          trigger={openCreate}
+          closeButton={() => {
+            setCreate(false);
+          }}
+        >
+          <h1>Crear Nueva Linea</h1>
+          <div className="newline">
+            <div className="title-field">Nombre: </div>
+            <input
+              className="value-field"
+              pattern="[A-Za-z0-9]"
+              onInput={(e) => {
+                setName(e.target.value.replace(/:/g, " "));
+                Axios.post("http://192.168.23.192:5000/exists", {
+                  newName: e.target.value.replace(/:/g, " "),
+                }).then((res) => {
+                  if (res.data) {
+                    setNewNameMsg("Este nombre ya existe");
+                  } else {
+                    setNewNameMsg(null);
+                  }
+                });
+              }}
+            />
+            <div className="nameMsgError">{newNameMsg}</div>
+          </div>
+          <Button
+            buttonSize={"btn--small"}
+            onClick={() => {
               Axios.post("http://192.168.23.192:5000/exists", {
-                newName: e.target.value.replace(/:/g, " "),
+                newName: newName,
               }).then((res) => {
-                if (res.data) {
-                  setNewNameMsg("Este nombre ya existe");
-                } else {
-                  setNewNameMsg(null);
+                if (res.data == false) {
+                  Axios.post("http://192.168.23.192:5000/newLine", {
+                    newName: newName,
+                  });
+                  setNewNameMsg("Linea Creada");
+                  setConfigList([]);
+                  getConfig();
                 }
               });
             }}
-          />
-          <div className="nameMsgError">{newNameMsg}</div>
-        </div>
-        <Button
-          buttonSize={"btn--small"}
-          onClick={() => {
-            Axios.post("http://192.168.23.192:5000/exists", {
-              newName: newName,
-            }).then((res) => {
-              if (res.data == false) {
-                Axios.post("http://192.168.23.192:5000/newLine", {
-                  newName: newName,
-                });
-                setNewNameMsg("Linea Creada");
-                setConfigList([]);
-                getConfig();
-              }
-            });
-          }}
-        >
-          Crear
-        </Button>
-      </Popup>
-      <div className="config">
-        <div className="select-linia">
-          <div className="title-field">Linea de Produccion</div>
-          <Select options={configList} onChange={onDropdownChange}></Select>
-        </div>
-        <div className="nlecturas">
-          <div className="title-field">Numero de Lecturas</div>
-          <input
-            className="value-field"
-            placeholder={numLect}
-            onChange={changeNumLect}
-          ></input>
-        </div>
-        <div className="lecturas-box">
-          <div className="title-field">Tiempo de cada Lectura</div>
-          <div className="times-box">{crear_tiempos()}</div>
-        </div>
-        <div
-          className="createLine"
-          onClick={() => {
-            setCreate(true);
-          }}
-        >
-          Crear Linea
-        </div>
-        {dropdownSelect != null ? (
+          >
+            Crear
+          </Button>
+        </Popup>
+        <div className="config">
+          <div className="select-linia">
+            <div className="title-field">Linea de Produccion</div>
+            <Select
+              styles={customstyle}
+              options={configList}
+              onChange={onDropdownChange}
+            ></Select>
+          </div>
+          <div className="nlecturas">
+            <div className="title-field">Numero de Lecturas</div>
+            <input
+              className="value-field"
+              placeholder={numLect}
+              onChange={changeNumLect}
+            ></input>
+          </div>
+          <div className="lecturas-box filldivh">
+            <div className="title-field">Tiempo de cada Lectura</div>
+            <div className="times-box">{crear_tiempos()}</div>
+          </div>
           <div
-            className="deleteLine"
+            className="createLine"
             onClick={() => {
-              eliminar_tiempo();
+              setCreate(true);
             }}
           >
-            Eliminar Linea
+            Crear Linea
           </div>
-        ) : null}
-      </div>
-      <div className="datos">
-        <div className="valores">
-          <div className="QR Code">
-            <div className="title-field">Codigo QR: {qrvalue}</div>
-          </div>
-          <div className="lecturas-view">
-            <div className="title-field">
-              Lecturas:{" "}
-              <div className="lect-individual">
-                {esdvalues.map((lectura, index) => (
-                  <div className="lectrow">
-                    <div className="lectname" id={index}>
-                      Lectura {index + 1} : {lectura}{" "}
-                    </div>
-                  </div>
-                ))}
-              </div>{" "}
+          {dropdownSelect != null ? (
+            <div
+              className="deleteLine"
+              onClick={() => {
+                eliminar_tiempo();
+              }}
+            >
+              Eliminar Linea
             </div>
-          </div>
-          <div className="Valor Final">
-            <div className="title-field">
-              Media de Lecturas: {MedianESDValues}
-            </div>
-          </div>
+          ) : null}
         </div>
-        <div className="buttons">
+        <div className="datos">
+          <div className="QR-Code">
+            <div className="title-field">
+              Codigo QR: <div className="value"> {qrvalue}</div>
+            </div>
+          </div>
+          <div className="lecturas-view filldivh">
+            <div className="title-field">Lecturas: </div>
+            <div className="lect-individual">
+              {esdvalues.map((lectura, index) => (
+                <div className="lectrow">
+                  <div className="lectname" id={index}>
+                    Lectura {index + 1} : {lectura} V
+                  </div>
+                </div>
+              ))}
+            </div>{" "}
+          </div>
+          <div className="Valor-Final">
+            <div className="title-field">
+              Media de Lecturas: <div className="value">{MedianESDValues}</div>
+            </div>
+          </div>
           <div
             className="start-button"
             className={
-              ScriptRunning == "False" ? "start-button" : "unclickable-button"
+              ScriptRunning == "False"
+                ? "start-button buttons"
+                : "unclickable-start-button buttons"
             }
             onClick={() => {
               if (ScriptRunning == "False") {
@@ -284,7 +298,9 @@ const Options = () => {
           <div
             className="stop-button"
             className={
-              ScriptRunning == "True" ? "stop-button" : "unclickable-button"
+              ScriptRunning == "True"
+                ? "stop-button buttons"
+                : "unclickable-stop-button buttons"
             }
             onClick={() => {
               if (ScriptRunning == "True") {
@@ -298,7 +314,9 @@ const Options = () => {
           </div>
           <div
             className={
-              ScriptRunning == "False" ? "test-button" : "unclickable-button"
+              ScriptRunning == "False"
+                ? "test-button buttons"
+                : "unclickable-test-button buttons"
             }
             onClick={() => {
               if (ScriptRunning == "False") {
@@ -310,7 +328,7 @@ const Options = () => {
             Test
           </div>
           <div
-            className="downloadButton"
+            className="downloadButton buttons"
             onClick={() => {
               Axios({
                 url: "http://192.168.23.192:5000/file",

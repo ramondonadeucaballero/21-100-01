@@ -1,52 +1,83 @@
 .options-div {
   display: grid;
   grid-template-columns: repeat(20, 1fr);
+  margin: 1rem;
+  width: 100%;
 }
 
 .config {
-  grid-column: 1/8;
+  height: inherit;
+  grid-column: 2/9;
+  display: grid;
+  grid-template-rows: repeat(10, 4rem);
+  row-gap: 1rem;
 }
 
 .datos {
-  grid-column: 9/20;
+  grid-column: 12/19;
+  display: grid;
+  grid-template-rows: repeat(10, 4rem);
+  row-gap: 1rem;
 }
 
 .buttons {
   display: flex;
 }
 
-.buttons > div {
+.valores {
+  grid-row: 1/6;
+}
+
+.buttons {
   color: white;
   display: flex;
   justify-content: center;
-  width: 2rem;
-  padding: 0.5rem 1rem;
   border-radius: 10px;
-  margin: 0rem 1rem;
+  align-content: center;
+  height: 3rem;
+  align-items: center;
+  width: 100%;
+  height: 3rem;
 }
 .start-button {
   background-color: green;
+  grid-row: 7/8;
 }
 .stop-button {
   background-color: red;
+  grid-row: 8/9;
 }
 .test-button {
   background-color: blue;
+  grid-row: 9/10;
 }
 .downloadButton {
   background-color: var(--primary);
+  grid-row: 10/11;
 }
-.unclickable-button {
+.unclickable-start-button {
   background-color: var(--unclickable);
+  grid-row: 7/8;
+}
+.unclickable-stop-button {
+  background-color: var(--unclickable);
+  grid-row: 8/9;
+}
+.unclickable-test-button {
+  background-color: var(--unclickable);
+  grid-row: 9/10;
 }
 .deleteLine {
   color: white;
   display: flex;
   justify-content: center;
   width: auto;
-  padding: 0.5rem 1rem;
   border-radius: 10px;
   background-color: red;
+  align-items: center;
+
+  height: 3rem;
+  grid-row: 9/10;
 }
 
 .createLine {
@@ -54,7 +85,97 @@
   display: flex;
   justify-content: center;
   width: auto;
-  padding: 0.5rem 1rem;
   border-radius: 10px;
   background-color: var(--primary);
+  align-items: center;
+  grid-row: 10/11;
+  height: 3rem;
+}
+
+.select-linia {
+  grid-row: 1/2;
+}
+
+.nlecturas {
+  grid-row: 2/3;
+  display: flex;
+  flex-direction: column;
+}
+
+.lecturas-box {
+  grid-row: 3/8;
+}
+
+.times-box {
+  padding: 1rem;
+  overflow-y: scroll;
+  border-radius: 0.4rem;
+  border-style: solid;
+  border-width: 1px;
+  border-color: var(--secondary);
+  height: 100%;
+}
+
+.times-box::-webkit-scrollbar {
+  width: 10px;
+}
+
+.times-box::-webkit-scrollbar-thumb {
+  background-color: var(--primary);
+  border-radius: 1rem;
+}
+
+.time-box {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+}
+
+.value-field {
+  height: 2.3rem;
+  border-radius: 0.4rem;
+  border-style: solid;
+  border-width: 1px;
+  border-color: var(--secondary);
+  padding: 0 0.5rem;
+}
+
+.QR-Code {
+  grid-row: 1/2;
+}
+
+.lecturas-view {
+  grid-row: 2/6;
+}
+
+.Valor-Final {
+  grid-row: 6/7;
+}
+
+.lect-individual {
+  padding: 1rem;
+  overflow-y: scroll;
+  border-radius: 0.4rem;
+  border-style: solid;
+  border-width: 1px;
+  border-color: var(--secondary);
+  height: 100%;
+}
+
+.lect-individual::-webkit-scrollbar {
+  width: 10px;
+}
+
+.lect-individual::-webkit-scrollbar-thumb {
+  background-color: var(--primary);
+  border-radius: 1rem;
+}
+
+.value {
+  font-size: 2rem;
+}
+
+.lectrow {
+  font-size: 1.4em;
+  font-weight: 400;
 }

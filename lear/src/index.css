@@ -1,13 +1,14 @@
 body {
-  overflow: hidden;
+  font-size: 1.1rem;
   margin: 0;
+  overflow-x: hidden;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
     Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
 }
 
 :root {
   --primary: #3278cd;
-  --secondary: #d3d3d3;
+  --secondary: #b4b4b4;
   --red: red;
   --unclickable: lightgrey;
   --green: green;
@@ -27,4 +28,16 @@ body {
 
 .grafana-app {
   visibility: hidden;
+}
+
+.filldivw {
+  display: flex;
+  height: 100%;
+  flex-direction: row;
+}
+
+.filldivh {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
 }

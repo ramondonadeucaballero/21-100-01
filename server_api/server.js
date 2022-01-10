@@ -9,9 +9,15 @@ const cookieParser = require("cookie-parser");
 const session = require("express-session");
 const path = require("path");
 
+const headerRes = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PATCH, PUT, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers": "Origin, Content-Type, X-Auth-Token",
+};
+
 app.use(
   cors({
-    origin: ["http://localhost:4000"],
+    origin: ["http://192.168.23.192:4000"],
     methods: ["GET", "POST"],
     credentials: true,
   })
