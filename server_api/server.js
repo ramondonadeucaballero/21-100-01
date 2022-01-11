@@ -17,7 +17,7 @@ const headerRes = {
 
 app.use(
   cors({
-    origin: ["http://192.168.23.192:4000"],
+    origin: ["http://192.168.1.101:4000"],
     methods: ["GET", "POST"],
     credentials: true,
   })
@@ -28,7 +28,6 @@ app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.get("/config", async (req, res) => {
-  console.log("ei");
   fs.readFile("./ESDconfigstored.txt", "utf-8", (err, data) => {
     if (err) {
       console.log(err);
@@ -63,6 +62,7 @@ app.get("/esdvalues", async (req, res) => {
 });
 
 app.get("/stop", async (req, res) => {
+  console.log("Stoping");
   fs.writeFile("./running.txt", "False", (err) => {
     if (err) console.log(err);
   });
@@ -75,7 +75,6 @@ app.get("/status", (req, res) => {
       console.log(err);
       return;
     } else {
-      console.log(data);
       res.send(data);
     }
   });
@@ -90,6 +89,7 @@ app.get("/file", (req, res) => {
 });
 
 app.post("/start", (req, res) => {
+  console.log("Starting");
   const { config } = req.body;
   if (config != "null:") {
     fs.writeFile("./ESDconfig.txt", config, (err) => {

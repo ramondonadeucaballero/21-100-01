@@ -93,6 +93,7 @@
 }
 
 .select-linia {
+  z-index: 0;
   grid-row: 1/2;
 }
 
@@ -128,7 +129,16 @@
 .time-box {
   display: flex;
   width: 100%;
-  flex-direction: column;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.4rem;
+  font-size: 1.4rem;
+}
+
+.time-box > .value-field {
+  width: 50%;
+  margin-left: 1rem;
 }
 
 .value-field {
@@ -178,4 +188,8 @@
 .lectrow {
   font-size: 1.4em;
   font-weight: 400;
+}
+
+.title-field {
+  margin-bottom: 0.3rem;
 }

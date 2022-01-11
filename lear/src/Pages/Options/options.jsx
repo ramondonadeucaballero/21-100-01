@@ -8,12 +8,14 @@ import { Button } from "../../Components/Buttons/Button/Button";
 
 const Options = () => {
   const [openCreate, setCreate] = useState(false);
+  const [openDownload, setDownload] = useState(false);
+  const [openDelete, setDelete] = useState(false);
   const [newNameMsg, setNewNameMsg] = useState("");
-  const [value, setValue] = useState("");
   const [configList, setConfigList] = useState([]);
   const [dropdownSelect, setDropdownSelect] = useState(null);
   const [numLect, setNumLect] = useState();
   const [lectTimes, setLectTimes] = useState([]);
+  const [sumTimes, setSumTimes] = useState([]);
   const [qrvalue, setQRvalue] = useState();
   const [esdvalues, setESDvalues] = useState([]);
   const [MedianESDValues, setMedian] = useState();
@@ -33,18 +35,19 @@ const Options = () => {
 
   const onDropdownChange = (value) => {
     setDropdownSelect(value["value"].split(":")[0]);
-    setValue("Line4");
     let config = value["value"].split(":");
     setNumLect(config.length - 1);
     let auxTimes = [];
     for (let i = 1; i < config.length; i++) {
       auxTimes.push(config[i]);
     }
+    document.getElementById("nlect").value = "";
     setLectTimes(auxTimes);
+    sumatemps(auxTimes);
   };
 
   const getConfig = async () => {
-    axios.get("http://192.168.23.192:5000/config").then((res) => {
+    axios.get("http://192.168.1.101:5000/config").then((res) => {
       let newConfig = [];
       for (let i = 0; i < res.data.length; i++) {
         newConfig.push({
@@ -58,7 +61,7 @@ const Options = () => {
 
   const status = async () => {
     console.log(esdvalues);
-    axios.get("http://192.168.23.192:5000/status").then((res) => {
+    axios.get("http://192.168.1.101:5000/status").then((res) => {
       setScriptRunning(res["data"]);
     });
   };
@@ -69,24 +72,29 @@ const Options = () => {
   }, []);
 
   const changeNumLect = async (e) => {
-    setNumLect(e.target.value);
-    for (let i = 0; i < configList.length; i++) {
-      let newConfig = [];
-      if (configList[i]["label"] == dropdownSelect) {
-        for (let j = 0; j < lectTimes.length && j < e.target.value; j++) {
-          newConfig.push(lectTimes[j]);
-        }
-        if (newConfig.length < e.target.value) {
-          while (newConfig.length < e.target.value) {
-            newConfig.push(newConfig[newConfig.length - 1]);
+    let numero = parseInt(e.target.value);
+    console.log(numero);
+    if (numero >= 1) {
+      setNumLect(numero);
+      for (let i = 0; i < configList.length; i++) {
+        let newConfig = [];
+        if (configList[i]["label"] == dropdownSelect) {
+          for (let j = 0; j < lectTimes.length && j < numero; j++) {
+            newConfig.push(lectTimes[j]);
           }
+          if (newConfig.length < numero) {
+            while (newConfig.length < numero) {
+              newConfig.push(newConfig[newConfig.length - 1]);
+            }
+          }
+          setLectTimes(newConfig);
+          sumatemps(newConfig);
+          configList[i]["value"] = dropdownSelect + ":" + newConfig.join(":");
+          setConfigList(configList);
+          Axios.post("http://192.168.1.101:5000/saveconfig", {
+            newConfig: dropdownSelect + ":" + newConfig.join(":"),
+          });
         }
-        setLectTimes(newConfig);
-        configList[i]["value"] = dropdownSelect + ":" + newConfig.join(":");
-        setConfigList(configList);
-        Axios.post("http://192.168.23.192:5000/saveconfig", {
-          newConfig: dropdownSelect + ":" + newConfig.join(":"),
-        });
       }
     }
   };
@@ -96,14 +104,14 @@ const Options = () => {
     setESDvalues([""]);
     setMedian();
     axios
-      .post("http://192.168.23.192:5000/test", {
+      .post("http://192.168.1.101:5000/test", {
         config: dropdownSelect + ":" + lectTimes.join(":"),
       })
       .then((res) => {
-        axios.get("http://192.168.23.192:5000/qrvalues").then((res) => {
+        axios.get("http://192.168.1.101:5000/qrvalues").then((res) => {
           setQRvalue(res["data"]);
         });
-        axios.get("http://192.168.23.192:5000/esdvalues").then((res) => {
+        axios.get("http://192.168.1.101:5000/esdvalues").then((res) => {
           var media = 0;
           var valores = "";
           for (var i in res["data"]) {
@@ -120,9 +128,10 @@ const Options = () => {
   function crear_tiempos() {
     return lectTimes.map((value, index) => (
       <div className="time-box" key={index + dropdownSelect}>
-        <div className="time-field">T{index}</div>
+        <div className="time-field">&#916;{index}</div>
         <input
           className="value-field"
+          id={"value-field-" + index}
           onChange={(e) => {
             lectTimes[index] = e.target.value;
             for (let i = 0; i < configList.length; i++) {
@@ -130,19 +139,37 @@ const Options = () => {
                 configList[i]["value"] =
                   dropdownSelect + ":" + lectTimes.join(":");
                 setConfigList(configList);
-                Axios.post("http://192.168.23.192:5000/saveconfig", {
+                Axios.post("http://192.168.1.101:5000/saveconfig", {
                   newConfig: dropdownSelect + ":" + lectTimes.join(":"),
                 });
               }
             }
             setLectTimes(lectTimes);
+            sumatemps(lectTimes);
             value = e.target.value;
           }}
           placeholder={value}
         ></input>
+        <div className="time-field">
+          T{index}: {sumTimes[index]} s
+        </div>
       </div>
     ));
   }
+
+  const sumatemps = (list) => {
+    let aux = 0;
+    console.log(list);
+    let newlist = [];
+    for (let i = 0; i < list.length; i++) {
+      console.log(aux);
+      aux = aux + parseFloat(list[i]);
+      newlist.push(aux.toFixed(2));
+    }
+    console.log(newlist);
+    setSumTimes(newlist);
+    return aux.toFixed(2);
+  };
 
   const eliminar_tiempo = () => {
     let newConfig = [];
@@ -155,7 +182,7 @@ const Options = () => {
       }
     }
 
-    Axios.post("http://192.168.23.192:5000/deleteline", {
+    Axios.post("http://192.168.1.101:5000/deleteline", {
       newConfig: newConfig,
     });
 
@@ -180,7 +207,7 @@ const Options = () => {
               pattern="[A-Za-z0-9]"
               onInput={(e) => {
                 setName(e.target.value.replace(/:/g, " "));
-                Axios.post("http://192.168.23.192:5000/exists", {
+                Axios.post("http://192.168.1.101:5000/exists", {
                   newName: e.target.value.replace(/:/g, " "),
                 }).then((res) => {
                   if (res.data) {
@@ -196,11 +223,11 @@ const Options = () => {
           <Button
             buttonSize={"btn--small"}
             onClick={() => {
-              Axios.post("http://192.168.23.192:5000/exists", {
+              Axios.post("http://192.168.1.101:5000/exists", {
                 newName: newName,
               }).then((res) => {
                 if (res.data == false) {
-                  Axios.post("http://192.168.23.192:5000/newLine", {
+                  Axios.post("http://192.168.1.101:5000/newLine", {
                     newName: newName,
                   });
                   setNewNameMsg("Linea Creada");
@@ -211,6 +238,28 @@ const Options = () => {
             }}
           >
             Crear
+          </Button>
+        </Popup>
+        <Popup trigger={openDelete}>
+          <h2>¿Seguro que quieres eliminar {dropdownSelect}?</h2>
+          <Button
+            buttonSize={"btn--small"}
+            buttonStyle={"btn--danger--solid"}
+            onClick={() => {
+              eliminar_tiempo();
+              setDelete(false);
+            }}
+          >
+            Eliminar
+          </Button>
+          <Button
+            buttonSize={"btn--small"}
+            buttonStyle={"btn--primary--solid"}
+            onClick={() => {
+              setDelete(false);
+            }}
+          >
+            Cancelar
           </Button>
         </Popup>
         <div className="config">
@@ -225,13 +274,17 @@ const Options = () => {
           <div className="nlecturas">
             <div className="title-field">Numero de Lecturas</div>
             <input
+              pattern="[0-9]"
+              id="nlect"
               className="value-field"
               placeholder={numLect}
               onChange={changeNumLect}
             ></input>
           </div>
           <div className="lecturas-box filldivh">
-            <div className="title-field">Tiempo de cada Lectura</div>
+            <div className="title-field">
+              Delta entre cada lectura en segundos
+            </div>
             <div className="times-box">{crear_tiempos()}</div>
           </div>
           <div
@@ -246,7 +299,7 @@ const Options = () => {
             <div
               className="deleteLine"
               onClick={() => {
-                eliminar_tiempo();
+                setDelete(true);
               }}
             >
               Eliminar Linea
@@ -287,7 +340,7 @@ const Options = () => {
               if (ScriptRunning == "False") {
                 console.log("entro");
                 setScriptRunning("True");
-                axios.post("http://192.168.23.192:5000/start", {
+                axios.post("http://192.168.1.101:5000/start", {
                   config: dropdownSelect + ":" + lectTimes.join(":"),
                 });
               }
@@ -305,7 +358,7 @@ const Options = () => {
             onClick={() => {
               if (ScriptRunning == "True") {
                 console.log("entro");
-                axios.get("http://192.168.23.192:5000/stop");
+                axios.get("http://192.168.1.101:5000/stop");
                 setScriptRunning("False");
               }
             }}
@@ -331,7 +384,7 @@ const Options = () => {
             className="downloadButton buttons"
             onClick={() => {
               Axios({
-                url: "http://192.168.23.192:5000/file",
+                url: "http://192.168.1.101:5000/file",
                 method: "GET",
                 responseType: "blob",
               }).then((response) => {
