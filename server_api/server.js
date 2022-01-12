@@ -3,11 +3,22 @@ const cors = require("cors");
 const app = express();
 const fs = require("fs");
 const spawn = require("child_process").spawn;
+const usb = require("usb");
 
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const session = require("express-session");
 const path = require("path");
+
+const { InfluxDB } = require("@influxdata/influxdb-client");
+
+// You can generate a Token from the "Tokens Tab" in the UI
+const token =
+  "sb1mNiKmHmo-SUKLXTgJQDCBxGPFPL5lNQ0CnFCLubdiGKFhBicyOdVpIpqq3OWi5Hew83-4-wy-DAtx6rcnGw==";
+const org = "E7";
+const bucket = "Lear";
+
+const client = new InfluxDB({ url: "http://localhost:8086", token: token });
 
 const headerRes = {
   "Access-Control-Allow-Origin": "*",
@@ -85,7 +96,18 @@ app.get("/file", (req, res) => {
     root: path.join(__dirname),
   };
   res.set("Content-Disposition", "inline");
-  res.download("test.csv");
+  res.download("ESD.csv");
+});
+
+app.get("/lines", (req, res) => {
+  fs.readFile("./lines.txt", "utf-8", (err, data) => {
+    if (err) {
+      console.log(err);
+      return;
+    } else {
+      res.send(data.split("\n"));
+    }
+  });
 });
 
 app.post("/start", (req, res) => {
@@ -101,6 +123,16 @@ app.post("/start", (req, res) => {
   });
   const ls = spawn("python", ["main.py"]);
   res.sendStatus("200");
+});
+
+app.post("/download", (req, res) => {
+  const { time, linea } = req.body;
+  console.log(time);
+  console.log(linea);
+  const ls = spawn("python", ["download.py", time, linea]);
+  ls.on("exit", function () {
+    res.sendStatus(200);
+  });
 });
 
 app.post("/test", (req, res) => {
@@ -173,6 +205,11 @@ app.post("/newLine", (req, res) => {
     } else {
       data = data + ("\r\n" + newName + ":");
       fs.writeFile("./ESDconfigstored.txt", data, (err) => {
+        if (err) console.log(err);
+      });
+      data = newName + "\n";
+      console.log(data);
+      fs.appendFile("./lines.txt", data, (err) => {
         if (err) console.log(err);
       });
       res.sendStatus(200);

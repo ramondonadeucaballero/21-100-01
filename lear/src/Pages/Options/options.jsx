@@ -5,6 +5,7 @@ import Axios from "axios";
 import axios from "axios";
 import Popup from "../../Components/Popup/popup.jsx";
 import { Button } from "../../Components/Buttons/Button/Button";
+import Download from "../../Components/Download/download";
 
 const Options = () => {
   const [openCreate, setCreate] = useState(false);
@@ -262,6 +263,14 @@ const Options = () => {
             Cancelar
           </Button>
         </Popup>
+        <Popup
+          trigger={openDownload}
+          closeButton={() => {
+            setDownload(false);
+          }}
+        >
+          <Download></Download>
+        </Popup>
         <div className="config">
           <div className="select-linia">
             <div className="title-field">Linea de Produccion</div>
@@ -383,16 +392,17 @@ const Options = () => {
           <div
             className="downloadButton buttons"
             onClick={() => {
-              Axios({
-                url: "http://192.168.1.101:5000/file",
-                method: "GET",
-                responseType: "blob",
-              }).then((response) => {
-                var myFile = new Blob([response.data], {
-                  type: "text/csv",
-                });
-                FileSaver.saveAs(myFile, "as.csv");
-              });
+              setDownload(true);
+              // Axios({
+              //   url: "http://192.168.1.101:5000/file",
+              //   method: "GET",
+              //   responseType: "blob",
+              // }).then((response) => {
+              //   var myFile = new Blob([response.data], {
+              //     type: "text/csv",
+              //   });
+              //   FileSaver.saveAs(myFile, "as.csv");
+              // });
             }}
           >
             Descargar
