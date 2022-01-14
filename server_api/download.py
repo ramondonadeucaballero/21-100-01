@@ -16,7 +16,7 @@ client = InfluxDBClient(url="http://localhost:8086", token=token)
 
 query = f'from(bucket:"{bucket}") |> range(start: - '+sys.argv[1]+') |> filter(fn: (r) => r._measurement == "Estatica" and r._field == "Estatica"'
 
-if(sys.argv[2] != ""):
+if(sys.argv[2] != "all"):
     query = query + ' and r.Line == "' + sys.argv[2] + '"'
     
 query = query + ")"

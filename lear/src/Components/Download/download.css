@@ -1,0 +1,56 @@
+.descarga-popup {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.seleccion-descarga {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.last {
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+}
+.last > div {
+  padding: 0 1rem 0 0;
+}
+.last > input {
+  height: 2.3rem;
+  border-radius: 0.4rem;
+  border-style: solid;
+  border-width: 1px;
+  border-color: var(--secondary);
+  margin: 0 1rem 0 0;
+  padding: 0 0.5rem;
+  width: 3rem;
+}
+
+.linea {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+}
+.linea > div {
+  padding: 0 1rem 0 0;
+}
+.select-linea {
+  width: 17rem;
+}
+
+.donde-descargar {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.select-location {
+  width: 17rem;
+}

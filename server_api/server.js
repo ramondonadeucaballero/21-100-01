@@ -2,8 +2,11 @@ const express = require("express");
 const cors = require("cors");
 const app = express();
 const fs = require("fs");
+const fse = require("fs-extra");
 const spawn = require("child_process").spawn;
+const usbDet = require("usb-detection");
 const usb = require("usb");
+const drive = require("drivelist");
 
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
@@ -91,12 +94,66 @@ app.get("/status", (req, res) => {
   });
 });
 
-app.get("/file", (req, res) => {
+app.get("/downloadfile", (req, res) => {
   var options = {
     root: path.join(__dirname),
   };
   res.set("Content-Disposition", "inline");
   res.download("ESD.csv");
+});
+
+app.post("/downloadUSBFile", async (req, res) => {
+  const { time, linea } = req.body;
+  var options = {
+    root: path.join(__dirname),
+  };
+  const usbs = await drive.list();
+  usbs.forEach((drive) => {
+    if (usbs.length > 1) {
+      if (drive["isRemovable"] == true) {
+        console.log(drive["mountpoints"][0]["path"]);
+        const d = new Date();
+        console.log(d);
+        newpath = path.resolve(
+          drive["mountpoints"][0]["path"],
+          d.getDate() +
+            "-" +
+            d.getMonth() +
+            "-" +
+            d.getFullYear() +
+            "-" +
+            d.getHours() +
+            "H-" +
+            d.getMinutes() +
+            "M-" +
+            d.getSeconds() +
+            "S-" +
+            time +
+            "-" +
+            linea +
+            ".csv"
+        );
+        console.log(newpath);
+        fse.move("./ESD.csv", newpath, (err) => {
+          if (err) return console.error(err);
+          console.log("success");
+        });
+        res.sendStatus(200);
+      }
+    } else {
+      res.sendStatus(201);
+    }
+  });
+});
+
+app.get("/waitUSB", (req, res) => {
+  var options = {
+    root: path.join(__dirname),
+  };
+  usbDet.startMonitoring();
+  usbDet.on("add", function (device) {
+    res.sendStatus(200);
+  });
 });
 
 app.get("/lines", (req, res) => {
@@ -127,8 +184,6 @@ app.post("/start", (req, res) => {
 
 app.post("/download", (req, res) => {
   const { time, linea } = req.body;
-  console.log(time);
-  console.log(linea);
   const ls = spawn("python", ["download.py", time, linea]);
   ls.on("exit", function () {
     res.sendStatus(200);

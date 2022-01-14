@@ -61,7 +61,6 @@ const Options = () => {
   };
 
   const status = async () => {
-    console.log(esdvalues);
     axios.get("http://192.168.1.101:5000/status").then((res) => {
       setScriptRunning(res["data"]);
     });
@@ -74,7 +73,6 @@ const Options = () => {
 
   const changeNumLect = async (e) => {
     let numero = parseInt(e.target.value);
-    console.log(numero);
     if (numero >= 1) {
       setNumLect(numero);
       for (let i = 0; i < configList.length; i++) {
@@ -118,7 +116,6 @@ const Options = () => {
           for (var i in res["data"]) {
             media = media + parseFloat(res["data"][i]);
           }
-          console.log(typeof valores);
           setESDvalues(res["data"]);
           setMedian(media / res["data"].length);
           setScriptRunning("False");
@@ -134,7 +131,7 @@ const Options = () => {
           className="value-field"
           id={"value-field-" + index}
           onChange={(e) => {
-            lectTimes[index] = e.target.value;
+            lectTimes[index] = e.target.value.replace(",", ".");
             for (let i = 0; i < configList.length; i++) {
               if (configList[i]["label"] == dropdownSelect) {
                 configList[i]["value"] =
@@ -163,11 +160,9 @@ const Options = () => {
     console.log(list);
     let newlist = [];
     for (let i = 0; i < list.length; i++) {
-      console.log(aux);
       aux = aux + parseFloat(list[i]);
       newlist.push(aux.toFixed(2));
     }
-    console.log(newlist);
     setSumTimes(newlist);
     return aux.toFixed(2);
   };
@@ -263,13 +258,17 @@ const Options = () => {
             Cancelar
           </Button>
         </Popup>
+
         <Popup
           trigger={openDownload}
           closeButton={() => {
             setDownload(false);
           }}
         >
-          <Download></Download>
+          <Download
+            openDownload={openDownload}
+            setDownload={setDownload}
+          ></Download>
         </Popup>
         <div className="config">
           <div className="select-linia">
@@ -347,7 +346,6 @@ const Options = () => {
             }
             onClick={() => {
               if (ScriptRunning == "False") {
-                console.log("entro");
                 setScriptRunning("True");
                 axios.post("http://192.168.1.101:5000/start", {
                   config: dropdownSelect + ":" + lectTimes.join(":"),
@@ -366,7 +364,6 @@ const Options = () => {
             }
             onClick={() => {
               if (ScriptRunning == "True") {
-                console.log("entro");
                 axios.get("http://192.168.1.101:5000/stop");
                 setScriptRunning("False");
               }

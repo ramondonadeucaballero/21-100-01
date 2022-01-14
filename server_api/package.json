@@ -15,10 +15,13 @@
     "child_process": "^1.0.2",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
+    "drivelist": "^9.2.4",
     "express": "^4.17.2",
     "express-session": "^1.17.2",
     "fs": "^0.0.1-security",
+    "fs-extra": "^10.0.0",
     "nodemon": "^2.0.15",
-    "usb": "^2.0.3"
+    "usb": "^2.0.3",
+    "usb-detection": "^4.13.0"
   }
 }
