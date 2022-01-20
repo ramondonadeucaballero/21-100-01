@@ -1,4 +1,10 @@
+body {
+  overflow: hidden;
+  background-color: white;
+}
+
 .options-div {
+  overflow-x: hidden;
   display: grid;
   grid-template-columns: repeat(20, 1fr);
   margin: 1rem;

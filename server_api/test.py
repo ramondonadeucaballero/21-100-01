@@ -6,6 +6,8 @@ import os
 import threading
 
 ser = serial.Serial('COM3', 9600)
+    
+
 here = os.path.dirname(os.path.abspath(__file__))
 
 # ============ QR READER FUNCITON ====================
@@ -51,7 +53,9 @@ def pieceDetection():
     while True and not leido:
         time.sleep(0.5)
         read = detectTask.read()
+        print("Leyendo Datos")
         if(read[0] > 5):
+            print("Leido")
             readESD(detectTask)
             leido=True
 

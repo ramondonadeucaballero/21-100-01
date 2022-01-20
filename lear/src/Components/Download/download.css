@@ -10,6 +10,10 @@
   align-items: flex-start;
 }
 
+.seleccion-descarga > div {
+  margin: 1rem;
+}
+
 .last {
   margin-top: 2rem;
   display: flex;
@@ -53,4 +57,5 @@
 
 .select-location {
   width: 17rem;
+  margin-left: 1rem;
 }

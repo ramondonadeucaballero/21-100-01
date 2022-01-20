@@ -1,0 +1,95 @@
+
+C:\Users\ramon\Documents\GitHub\21-100-01\server_api>cd .. 
+
+C:\Users\ramon\Documents\GitHub\21-100-01>cd .. 
+
+C:\Users\ramon\Documents\GitHub>cd Users 
+
+C:\Users\ramon\Documents\GitHub>cd ramon 
+
+C:\Users\ramon\Documents\GitHub>cd Documents 
+
+C:\Users\ramon\Documents\GitHub>cd GitHub 
+
+C:\Users\ramon\Documents\GitHub>cd 21-100-01 
+
+C:\Users\ramon\Documents\GitHub\21-100-01>cd server_api 
+
+C:\Users\ramon\Documents\GitHub\21-100-01\server_api>npm start 
+
+> server_api@1.0.0 start
+> node server.js
+
+Server has started on port 5000
+
+C:\Users\ramon\Documents\GitHub\21-100-01\server_api>cd .. 
+
+C:\Users\ramon\Documents\GitHub\21-100-01>cd .. 
+
+C:\Users\ramon\Documents\GitHub>cd Users 
+
+C:\Users\ramon\Documents\GitHub>cd ramon 
+
+C:\Users\ramon\Documents\GitHub>cd Documents 
+
+C:\Users\ramon\Documents\GitHub>cd GitHub 
+
+C:\Users\ramon\Documents\GitHub>cd 21-100-01 
+
+C:\Users\ramon\Documents\GitHub\21-100-01>cd server_api 
+
+C:\Users\ramon\Documents\GitHub\21-100-01\server_api>npm start 
+
+> server_api@1.0.0 start
+> node server.js
+
+Server has started on port 5000
+¨Desea terminar el trabajo por lotes (S/N)? 
+C:\Users\ramon\Documents\GitHub\21-100-01\server_api>cd .. 
+
+C:\Users\ramon\Documents\GitHub\21-100-01>cd .. 
+
+C:\Users\ramon\Documents\GitHub>cd Users 
+
+C:\Users\ramon\Documents\GitHub>cd ramon 
+
+C:\Users\ramon\Documents\GitHub>cd Documents 
+
+C:\Users\ramon\Documents\GitHub>cd GitHub 
+
+C:\Users\ramon\Documents\GitHub>cd 21-100-01 
+
+C:\Users\ramon\Documents\GitHub\21-100-01>cd server_api 
+
+C:\Users\ramon\Documents\GitHub\21-100-01\server_api>npm start 
+
+> server_api@1.0.0 start
+> node server.js
+
+Server has started on port 5000
+ei
+
+C:\Users\ramon\Documents\GitHub\21-100-01\server_api>cd .. 
+
+C:\Users\ramon\Documents\GitHub\21-100-01>cd .. 
+
+C:\Users\ramon\Documents\GitHub>cd Users 
+
+C:\Users\ramon\Documents\GitHub>cd ramon 
+
+C:\Users\ramon\Documents\GitHub>cd Documents 
+
+C:\Users\ramon\Documents\GitHub>cd GitHub 
+
+C:\Users\ramon\Documents\GitHub>cd 21-100-01 
+
+C:\Users\ramon\Documents\GitHub\21-100-01>cd server_api 
+
+C:\Users\ramon\Documents\GitHub\21-100-01\server_api>npm start 
+
+> server_api@1.0.0 start
+> node server.js
+
+Server has started on port 5000
+ei
+¨Desea terminar el trabajo por lotes (S/N)? 

@@ -1,20 +1,32 @@
 .header {
-    height: 4.375rem;
-    background-color: var(--secondary);
-    color: rgb(0, 0, 0);
-    display: flex;
-    align-items: center;
-    align-content: center;
-    justify-content: space-between;
-    padding: 0 20px;
+  height: 4.375rem;
+  background-color: var(--secondary);
+  color: rgb(0, 0, 0);
+  display: flex;
+  align-items: center;
+  align-content: center;
+  justify-content: space-between;
+  padding: 0 20px;
 }
 
-header>div{
-    margin: 0 10px;
+header > div {
+  margin: 0 10px;
 }
 
-.options-button{
-    padding: 10px;
-    border-radius: 10px;
-    background-color: var(--primary);
+.options-button {
+  padding: 10px;
+  border-radius: 10px;
+  background-color: var(--primary);
+  color: var(--white);
+  width: 6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-content: center;
+}
+
+.Lear,
+.E7 {
+  height: 3.375rem;
+  margin-left: 1rem;
 }

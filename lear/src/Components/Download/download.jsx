@@ -9,6 +9,14 @@ import "./download.css";
 const FileSaver = require("file-saver");
 const FileDownload = require("js-file-download");
 
+const source = axios.CancelToken.source();
+const CancelToken = source.token;
+
+const currentURL = window.location.href;
+
+const ip = currentURL.split(":")[1].split("//")[1];
+console.log(ip);
+
 const Download = (props) => {
   const [lastSelect, setLastSelect] = useState(null);
   const [lineaSelect, setLineaSelect] = useState(null);
@@ -22,7 +30,7 @@ const Download = (props) => {
   const [lineas, setLineas] = useState([]);
   const [locations, setLocations] = useState([
     { value: "Este dispositivo", label: "Este dispositivo" },
-    { value: "USB", label: "USB" },
+    { value: "USB", label: "USB en el ordenador" },
   ]);
   const lastOptions = [
     { value: "m", label: "Minutos" },
@@ -43,7 +51,7 @@ const Download = (props) => {
   };
 
   const getLines = () => {
-    axios.get("http://192.168.1.101:5000/lines").then((res) => {
+    axios.get("http://" + ip + ":5000/lines").then((res) => {
       let newConfig = [];
       newConfig.push({
         label: "Todas las lineas",
@@ -128,13 +136,13 @@ const Download = (props) => {
           } else {
             setOpenUsb(true);
             setDownloadMsg("Descargando...");
-            Axios.post("http://192.168.1.101:5000/download", {
+            Axios.post("http://" + ip + ":5000/download", {
               time: timeSelect + lastSelect,
               linea: lineaSelect,
             }).then(() => {
               if (locationSelect == "USB") {
                 setOpenUsb(true);
-                Axios.post("http://192.168.1.101:5000/downloadUSBFile", {
+                Axios.post("http://" + ip + ":5000/downloadUSBFile", {
                   time: timeSelect + lastSelect,
                   linea: lineaSelect,
                 }).then((response) => {
@@ -149,26 +157,14 @@ const Download = (props) => {
                     setDownloadMsg(
                       "No hay ningun USB conectado. Introduzca un USB"
                     );
-                    Axios.get("http://192.168.1.101:5000/waitUSB").then(() => {
-                      console.log("No Hay USB");
-                      setDownloadMsg("Se ha detectado un USB");
-                      Axios.post("http://192.168.1.101:5000/downloadUSBFile", {
-                        time: timeSelect + lastSelect,
-                        linea: lineaSelect,
-                      }).then(() => {
-                        console.log("Hay USB");
-                        setDownloadMsg("Se ha descargado el archivo en el USB");
-                        setTimeout(function () {
-                          setOpenUsb(false);
-                          props.setDownload(false);
-                        }, 3000);
-                      });
-                    });
+                    setTimeout(function () {
+                      setOpenUsb(false);
+                    }, 3000);
                   }
                 });
               } else {
                 Axios({
-                  url: "http://192.168.1.101:5000/downloadfile",
+                  url: "http://" + ip + ":5000/downloadfile",
                   method: "GET",
                   responseType: "blob",
                 }).then((response) => {
@@ -177,22 +173,28 @@ const Download = (props) => {
                   });
                   const d = new Date();
                   let filename =
-                    d.getDay() +
-                    "'/'" +
-                    d.getMonth() +
-                    "'/'" +
-                    d.getFullYear() +
-                    "_" +
-                    d.getHours() +
-                    ":" +
-                    d.getMinutes() +
-                    ":" +
-                    d.getSeconds() +
+                    d.getDate() +
                     "-" +
+                    d.getMonth() +
+                    "-" +
+                    d.getFullYear() +
+                    "-" +
+                    d.getHours() +
+                    "H-" +
+                    d.getMinutes() +
+                    "M-" +
+                    d.getSeconds() +
+                    "S-" +
                     timeSelect +
-                    lastSelect;
+                    "-" +
+                    lineaSelect;
                   console.log(filename);
                   FileSaver.saveAs(myFile, filename + ".csv");
+                  setDownloadMsg("Se ha descargado el archivo.");
+                  setTimeout(function () {
+                    setOpenUsb(false);
+                    props.setDownload(false);
+                  }, 3000);
                 });
               }
             });

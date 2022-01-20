@@ -111,6 +111,12 @@ def storeData():
         point = Point("Estatica").tag("Line", machineName).field("Estatica", valueESD).field("QR", valueQR).tag("QRCode", str(valueQR))
        
         write_api.write(bucket, org, point)
+        f= open(os.path.join(here, 'ESDtest.txt'),'w')
+        f.write(str(valueESD))
+        f.close()
+        f= open(os.path.join(here, 'QRtest.txt'),'w')
+        f.write(str(valueQR))
+        f.close()
 
 # ============ CPK Function ====================
 def cpk():
@@ -138,6 +144,9 @@ def cpk():
             cpk=(min(cpl,cpu))
             point = Point("CPK").tag("Line", machineName).field("cpk", cpk)
             write_api.write(bucket, org, point)
+    
+    
+    client.close()
             
 
 
@@ -225,6 +234,5 @@ if __name__ == '__main__':
     while check_stop()  == "True":
        time.sleep(1)
 
-    client.close()
     stopThreads = True
 

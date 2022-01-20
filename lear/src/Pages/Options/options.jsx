@@ -27,11 +27,26 @@ const Options = () => {
   const FileDownload = require("js-file-download");
   axios.defaults.headers.common["Acces-Control-Allow-Origin"] = "*";
 
+  const currentURL = window.location.href;
+
+  const ip = currentURL.split(":")[1].split("//")[1];
+
   const customstyle = {
     option: (provided, state) => ({
       ...provided,
       border: state.isFocused ? "red" : "green",
     }),
+  };
+
+  const codeReading = async () => {
+    setInterval(() => {
+      axios.get("http://" + ip + ":5000/qrvalues").then((res) => {
+        setQRvalue(res["data"]);
+      });
+      axios.get("http://" + ip + ":5000/esdvalues").then((res) => {
+        setMedian(res["data"]);
+      });
+    }, 2000);
   };
 
   const onDropdownChange = (value) => {
@@ -48,7 +63,7 @@ const Options = () => {
   };
 
   const getConfig = async () => {
-    axios.get("http://192.168.1.101:5000/config").then((res) => {
+    axios.get("http://" + ip + ":5000/config").then((res) => {
       let newConfig = [];
       for (let i = 0; i < res.data.length; i++) {
         newConfig.push({
@@ -61,8 +76,9 @@ const Options = () => {
   };
 
   const status = async () => {
-    axios.get("http://192.168.1.101:5000/status").then((res) => {
+    axios.get("http://" + ip + ":5000/status").then((res) => {
       setScriptRunning(res["data"]);
+      console.log(res["data"]);
     });
   };
 
@@ -90,7 +106,7 @@ const Options = () => {
           sumatemps(newConfig);
           configList[i]["value"] = dropdownSelect + ":" + newConfig.join(":");
           setConfigList(configList);
-          Axios.post("http://192.168.1.101:5000/saveconfig", {
+          Axios.post("http://" + ip + ":5000/saveconfig", {
             newConfig: dropdownSelect + ":" + newConfig.join(":"),
           });
         }
@@ -103,14 +119,14 @@ const Options = () => {
     setESDvalues([""]);
     setMedian();
     axios
-      .post("http://192.168.1.101:5000/test", {
+      .post("http://" + ip + ":5000/test", {
         config: dropdownSelect + ":" + lectTimes.join(":"),
       })
       .then((res) => {
-        axios.get("http://192.168.1.101:5000/qrvalues").then((res) => {
+        axios.get("http://" + ip + ":5000/qrvalues").then((res) => {
           setQRvalue(res["data"]);
         });
-        axios.get("http://192.168.1.101:5000/esdvalues").then((res) => {
+        axios.get("http://" + ip + ":5000/esdvalues").then((res) => {
           var media = 0;
           var valores = "";
           for (var i in res["data"]) {
@@ -137,7 +153,7 @@ const Options = () => {
                 configList[i]["value"] =
                   dropdownSelect + ":" + lectTimes.join(":");
                 setConfigList(configList);
-                Axios.post("http://192.168.1.101:5000/saveconfig", {
+                Axios.post("http://" + ip + ":5000/saveconfig", {
                   newConfig: dropdownSelect + ":" + lectTimes.join(":"),
                 });
               }
@@ -157,7 +173,6 @@ const Options = () => {
 
   const sumatemps = (list) => {
     let aux = 0;
-    console.log(list);
     let newlist = [];
     for (let i = 0; i < list.length; i++) {
       aux = aux + parseFloat(list[i]);
@@ -178,7 +193,7 @@ const Options = () => {
       }
     }
 
-    Axios.post("http://192.168.1.101:5000/deleteline", {
+    Axios.post("http://" + ip + ":5000/deleteline", {
       newConfig: newConfig,
     });
 
@@ -203,7 +218,7 @@ const Options = () => {
               pattern="[A-Za-z0-9]"
               onInput={(e) => {
                 setName(e.target.value.replace(/:/g, " "));
-                Axios.post("http://192.168.1.101:5000/exists", {
+                Axios.post("http://" + ip + ":5000/exists", {
                   newName: e.target.value.replace(/:/g, " "),
                 }).then((res) => {
                   if (res.data) {
@@ -219,11 +234,11 @@ const Options = () => {
           <Button
             buttonSize={"btn--small"}
             onClick={() => {
-              Axios.post("http://192.168.1.101:5000/exists", {
+              Axios.post("http://" + ip + ":5000/exists", {
                 newName: newName,
               }).then((res) => {
                 if (res.data == false) {
-                  Axios.post("http://192.168.1.101:5000/newLine", {
+                  Axios.post("http://" + ip + ":5000/newLine", {
                     newName: newName,
                   });
                   setNewNameMsg("Linea Creada");
@@ -347,7 +362,8 @@ const Options = () => {
             onClick={() => {
               if (ScriptRunning == "False") {
                 setScriptRunning("True");
-                axios.post("http://192.168.1.101:5000/start", {
+
+                axios.post("http://" + ip + ":5000/start", {
                   config: dropdownSelect + ":" + lectTimes.join(":"),
                 });
               }
@@ -364,7 +380,7 @@ const Options = () => {
             }
             onClick={() => {
               if (ScriptRunning == "True") {
-                axios.get("http://192.168.1.101:5000/stop");
+                axios.get("http://" + ip + ":5000/stop");
                 setScriptRunning("False");
               }
             }}
@@ -391,7 +407,7 @@ const Options = () => {
             onClick={() => {
               setDownload(true);
               // Axios({
-              //   url: "http://192.168.1.101:5000/file",
+              //   url: ip+":5000/file",
               //   method: "GET",
               //   responseType: "blob",
               // }).then((response) => {
