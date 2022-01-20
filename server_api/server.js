@@ -40,6 +40,9 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+// ============ GET /config ====================
+// Returns all the configurations stored in ESDconfigstored in a list
+
 app.get("/config", async (req, res) => {
   fs.readFile(
     "C:/Users/ramon/Documents/GitHub/21-100-01/server_api/ESDconfigstored.txt",
@@ -54,6 +57,9 @@ app.get("/config", async (req, res) => {
     }
   );
 });
+
+// ============ GET /qrvalues ====================
+//
 
 app.get("/qrvalues", async (req, res) => {
   fs.readFile(
@@ -70,6 +76,9 @@ app.get("/qrvalues", async (req, res) => {
   );
 });
 
+// ============ GET /esdvalues ====================
+// Returns the values in the file esdtest, where all read values will be written after running "test.py"
+
 app.get("/esdvalues", async (req, res) => {
   fs.readFile(
     "C:/Users/ramon/Documents/GitHub/21-100-01/server_api/ESDtest.txt",
@@ -85,6 +94,9 @@ app.get("/esdvalues", async (req, res) => {
   );
 });
 
+// ============ GET /stop ====================
+// Writes False in the file "running.txt" in order to stop the execution of "main.py"
+
 app.get("/stop", async (req, res) => {
   console.log("Stoping");
   fs.writeFile(
@@ -97,6 +109,9 @@ app.get("/stop", async (req, res) => {
   res.sendStatus(200);
   return;
 });
+
+// ============ GET /status ====================
+// Returns the status in "running.txt" file.
 
 app.get("/status", (req, res) => {
   console.log("ei");
@@ -115,10 +130,17 @@ app.get("/status", (req, res) => {
   );
 });
 
+// ============ GET /downloadfile ====================
+// Sends the file ESC.csv to the client.
+
 app.get("/downloadfile", (req, res) => {
   res.set("Content-Disposition", "inline");
   res.download("ESD.csv");
 });
+
+// ============ POST /downloadUSBFile ====================
+// Checks if there is a USB connected, then moves the file ESD.csv to it and then returns 200,
+// if there is no usb, returns 201
 
 app.post("/downloadUSBFile", async (req, res) => {
   try {
@@ -149,7 +171,6 @@ app.post("/downloadUSBFile", async (req, res) => {
               linea +
               ".csv"
           );
-          console.log(newpath);
           fse.move(
             "C:/Users/ramon/Documents/GitHub/21-100-01/server_api/ESD.csv",
             newpath,
@@ -172,6 +193,9 @@ app.post("/downloadUSBFile", async (req, res) => {
   }
 });
 
+// ============ GET /lines ====================
+// Returns all lines stored in "lines.txt"
+
 app.get("/lines", (req, res) => {
   fs.readFile(
     "C:/Users/ramon/Documents/GitHub/21-100-01/server_api/lines.txt",
@@ -183,11 +207,13 @@ app.get("/lines", (req, res) => {
       } else {
         res.send(data.split("\n"));
         return;
-        return;
       }
     }
   );
 });
+
+// ============ GET /start ====================
+// Stores the selected config in ESDconfig.txt, and then starts main.py
 
 app.post("/start", (req, res) => {
   try {
@@ -201,13 +227,6 @@ app.post("/start", (req, res) => {
         }
       );
     }
-    fs.writeFile(
-      "C:/Users/ramon/Documents/GitHub/21-100-01/server_api/Error.txt",
-      "noif",
-      (err) => {
-        if (err) console.log(err);
-      }
-    );
     fs.writeFile(
       "C:/Users/ramon/Documents/GitHub/21-100-01/server_api/running.txt",
       "True",
@@ -234,6 +253,9 @@ app.post("/start", (req, res) => {
   }
 });
 
+// ============ POST /download ====================
+// Runs the "download.py" script with time and linea as arguments.
+
 app.post("/download", (req, res) => {
   const { time, linea } = req.body;
   const ls = spawn(
@@ -249,6 +271,9 @@ app.post("/download", (req, res) => {
     return;
   });
 });
+
+// ============ GET /test ====================
+// Empty files QRtest.txt and ESDtest.tct and then runs the script "test"
 
 app.post("/test", (req, res) => {
   const { config } = req.body;
@@ -286,6 +311,9 @@ app.post("/test", (req, res) => {
   });
 });
 
+// ============ GET /saveconfig ====================
+// Saves the values recieve to the "ESDconfigured.txt" file
+
 app.post("/saveconfig", async (req, res) => {
   const { newConfig } = req.body;
   fs.readFile(
@@ -318,6 +346,9 @@ app.post("/saveconfig", async (req, res) => {
   );
 });
 
+// ============ GET /exists ====================
+// Checks if the given name exists
+
 app.post("/exists", (req, res) => {
   const { newName } = req.body;
   fs.readFile(
@@ -342,6 +373,9 @@ app.post("/exists", (req, res) => {
     }
   );
 });
+
+// ============ GET /config ====================
+// Creates a new Line
 
 app.post("/newLine", (req, res) => {
   const { newName } = req.body;
@@ -377,6 +411,9 @@ app.post("/newLine", (req, res) => {
   );
 });
 
+// ============ GET /deleteline ====================
+// Deletes a line
+
 app.post("/deleteLine", (req, res) => {
   const { newConfig } = req.body;
   fs.writeFile(
@@ -389,6 +426,9 @@ app.post("/deleteLine", (req, res) => {
   res.sendStatus(200);
   return;
 });
+
+// ============ GET /config ====================
+// Deprecated
 
 app.post("/newname", (req, res) => {
   const { newName } = req.body;
