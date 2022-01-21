@@ -44,6 +44,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Returns all the configurations stored in ESDconfigstored in a list
 
 app.get("/config", async (req, res) => {
+  console.log("/config");
   fs.readFile(
     "C:/Users/ramon/Documents/GitHub/21-100-01/server_api/ESDconfigstored.txt",
     "utf-8",
@@ -62,6 +63,7 @@ app.get("/config", async (req, res) => {
 //
 
 app.get("/qrvalues", async (req, res) => {
+  console.log("/qrvalues");
   fs.readFile(
     "C:/Users/ramon/Documents/GitHub/21-100-01/server_api/QRtest.txt",
     "utf-8",
@@ -80,6 +82,7 @@ app.get("/qrvalues", async (req, res) => {
 // Returns the values in the file esdtest, where all read values will be written after running "test.py"
 
 app.get("/esdvalues", async (req, res) => {
+  console.log("/esdvalues");
   fs.readFile(
     "C:/Users/ramon/Documents/GitHub/21-100-01/server_api/ESDtest.txt",
     "utf-8",
@@ -98,7 +101,7 @@ app.get("/esdvalues", async (req, res) => {
 // Writes False in the file "running.txt" in order to stop the execution of "main.py"
 
 app.get("/stop", async (req, res) => {
-  console.log("Stoping");
+  console.log("/stop");
   fs.writeFile(
     "C:/Users/ramon/Documents/GitHub/21-100-01/server_api/running.txt",
     "False",
@@ -114,7 +117,7 @@ app.get("/stop", async (req, res) => {
 // Returns the status in "running.txt" file.
 
 app.get("/status", (req, res) => {
-  console.log("ei");
+  console.log("/status");
   fs.readFile(
     "C:/Users/ramon/Documents/GitHub/21-100-01/server_api/running.txt",
     "utf-8",
@@ -134,6 +137,7 @@ app.get("/status", (req, res) => {
 // Sends the file ESC.csv to the client.
 
 app.get("/downloadfile", (req, res) => {
+  console.log("/downloadfile");
   res.set("Content-Disposition", "inline");
   res.download("ESD.csv");
 });
@@ -143,6 +147,7 @@ app.get("/downloadfile", (req, res) => {
 // if there is no usb, returns 201
 
 app.post("/downloadUSBFile", async (req, res) => {
+  console.log("/downloadUSBFile");
   try {
     const { time, linea } = req.body;
     const usbs = await drive.list();
@@ -197,6 +202,7 @@ app.post("/downloadUSBFile", async (req, res) => {
 // Returns all lines stored in "lines.txt"
 
 app.get("/lines", (req, res) => {
+  console.log("/lines");
   fs.readFile(
     "C:/Users/ramon/Documents/GitHub/21-100-01/server_api/lines.txt",
     "utf-8",
@@ -216,6 +222,7 @@ app.get("/lines", (req, res) => {
 // Stores the selected config in ESDconfig.txt, and then starts main.py
 
 app.post("/start", (req, res) => {
+  console.log("/start");
   try {
     const { config } = req.body;
     if (config != "null:") {
@@ -257,6 +264,7 @@ app.post("/start", (req, res) => {
 // Runs the "download.py" script with time and linea as arguments.
 
 app.post("/download", (req, res) => {
+  console.log("/download");
   const { time, linea } = req.body;
   const ls = spawn(
     "C:/Users/ramon/Documents/GitHub/21-100-01/server_api/python3.9.exe",
@@ -276,6 +284,7 @@ app.post("/download", (req, res) => {
 // Empty files QRtest.txt and ESDtest.tct and then runs the script "test"
 
 app.post("/test", (req, res) => {
+  console.log("/test");
   const { config } = req.body;
   console.log("TEST");
   if (config != "null:") {
@@ -301,6 +310,13 @@ app.post("/test", (req, res) => {
       if (err) console.log(err);
     }
   );
+  fs.writeFile(
+    "C:/Users/ramon/Documents/GitHub/21-100-01/server_api/running.txt",
+    "Test",
+    (err) => {
+      if (err) console.log(err);
+    }
+  );
   const ls = spawn(
     "C:/Users/ramon/Documents/GitHub/21-100-01/server_api/python3.9.exe",
     ["./test.py"]
@@ -315,6 +331,7 @@ app.post("/test", (req, res) => {
 // Saves the values recieve to the "ESDconfigured.txt" file
 
 app.post("/saveconfig", async (req, res) => {
+  console.log("/saveconfig");
   const { newConfig } = req.body;
   fs.readFile(
     "C:/Users/ramon/Documents/GitHub/21-100-01/server_api/ESDconfigstored.txt",
@@ -350,6 +367,7 @@ app.post("/saveconfig", async (req, res) => {
 // Checks if the given name exists
 
 app.post("/exists", (req, res) => {
+  console.log("/exists");
   const { newName } = req.body;
   fs.readFile(
     "C:/Users/ramon/Documents/GitHub/21-100-01/server_api/ESDconfigstored.txt",
@@ -378,6 +396,7 @@ app.post("/exists", (req, res) => {
 // Creates a new Line
 
 app.post("/newLine", (req, res) => {
+  console.log("/newLine");
   const { newName } = req.body;
   fs.readFile(
     "C:/Users/ramon/Documents/GitHub/21-100-01/server_api/ESDconfigstored.txt",
@@ -415,6 +434,7 @@ app.post("/newLine", (req, res) => {
 // Deletes a line
 
 app.post("/deleteLine", (req, res) => {
+  console.log("/deleteLine");
   const { newConfig } = req.body;
   fs.writeFile(
     "C:/Users/ramon/Documents/GitHub/21-100-01/server_api/ESDconfigstored.txt",
@@ -427,10 +447,10 @@ app.post("/deleteLine", (req, res) => {
   return;
 });
 
-// ============ GET /config ====================
 // Deprecated
 
 app.post("/newname", (req, res) => {
+  console.log("/newname");
   const { newName } = req.body;
   console.log(req.body);
   let config = [];

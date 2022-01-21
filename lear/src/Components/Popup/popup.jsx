@@ -10,7 +10,7 @@ const Popup = (props) => {
         {props.closeButton !== undefined && (
           <Button
             style="closeButton"
-            buttonSize="btn--small"
+            buttonSize="btn--thin"
             buttonStyle="btn--danger--solid"
             onClick={props.closeButton}
           >

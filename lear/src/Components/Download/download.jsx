@@ -29,8 +29,8 @@ const Download = (props) => {
 
   const [lineas, setLineas] = useState([]);
   const [locations, setLocations] = useState([
-    { value: "Este dispositivo", label: "Este dispositivo" },
-    { value: "USB", label: "USB en el ordenador" },
+    { value: "Este dispositivo", label: "En este dispositivo" },
+    { value: "USB", label: "USB en PC de la maleta" },
   ]);
   const lastOptions = [
     { value: "m", label: "Minutos" },
@@ -104,7 +104,11 @@ const Download = (props) => {
               setTime(e.target.value);
             }}
           ></input>
-          <Select options={lastOptions} onChange={onLastChange}></Select>
+          <Select
+            options={lastOptions}
+            onChange={onLastChange}
+            isSearchable={false}
+          ></Select>
         </div>
         <div className="linea">
           <div className="title-field">Descargar linea: </div>
@@ -120,6 +124,7 @@ const Download = (props) => {
             className="select-location"
             options={locations}
             onChange={onLocationChange}
+            isSearchable={false}
           ></Select>
         </div>
       </div>

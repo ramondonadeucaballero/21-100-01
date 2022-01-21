@@ -7,6 +7,9 @@
   align-content: center;
   justify-content: space-between;
   padding: 0 20px;
+  max-width: 100vw;
+  width: auto;
+  position: static;
 }
 
 header > div {
@@ -23,10 +26,31 @@ header > div {
   align-items: center;
   justify-content: center;
   align-content: center;
+  flex-direction: row;
+}
+
+.logos {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-content: center;
+  flex-direction: row;
 }
 
 .Lear,
 .E7 {
-  height: 3.375rem;
+  display: inline-block;
+  height: 3rem;
+  width: auto;
   margin-left: 1rem;
+}
+
+@media (max-width: 400px) {
+  .Lear,
+  .E7 {
+    display: inline-block;
+    height: 1rem;
+    width: 3rem;
+    margin-left: 1rem;
+  }
 }

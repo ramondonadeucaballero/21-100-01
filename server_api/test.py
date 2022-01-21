@@ -7,23 +7,39 @@ import threading
 
 ser = serial.Serial('COM3', 9600)
     
-
+ESD = False
+QR = False
 here = os.path.dirname(os.path.abspath(__file__))
+
+# ============ Stop Script ====================
+# Checks if the script must stop.
+def check_stop() :
+    file = open(os.path.join(here, "running.txt"))
+    closed=(file.read())
+    file.close()
+    if(ESD and QR):
+        print("done")
+        return "False"
+        
+    return closed
 
 # ============ QR READER FUNCITON ====================
 # Reads the data from QR reader and stores it in a Queue
 
 def readQR():
+    global QR
     data = ser.readline()
     data = data.split(b"\n")[0].decode()
     f= open(os.path.join(here, 'QRtest.txt'), 'w')
     f.write(str(data))
     f.close()
+    QR=True
                 
 # ============ ESD READER FUNCITON ====================
 # Data is read from the USB-6000.
 # The ESDconfig file declares how many readings are done, and the time intervals between them.
 def readESD(detectTask):
+    global ESD
     global readTimes    
     f= open(os.path.join(here, 'ESDtest.txt'),'w')
     writing=""
@@ -38,6 +54,7 @@ def readESD(detectTask):
     value=(value-3)*200
     f.write(writing[:len(writing)-1])
     f.close()
+    ESD = True
         
 # ============ Piece Detection Function ====================
 # Loops waiting for a detection signal, and then calls ReadESD() and StoreData() functions.
@@ -50,7 +67,7 @@ def pieceDetection():
 
     detectTask.start()
     leido = False
-    while True and not leido:
+    while True and not leido and check_stop() == "Test":
         time.sleep(0.5)
         read = detectTask.read()
         print("Leyendo Datos")
@@ -87,4 +104,11 @@ if __name__ == '__main__':
     detectionThread = threading.Thread(target=pieceDetection)
     detectionThread.start()
     
+    while check_stop()  == "Test":
+       time.sleep(1)
+    
+    f= open(os.path.join(here, 'running.txt'),'w')
+    f.write("False")
+    f.close()
+    ser.close()
     
