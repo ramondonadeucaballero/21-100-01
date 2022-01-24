@@ -59,3 +59,7 @@
   width: 17rem;
   margin-left: 1rem;
 }
+.errorMsg {
+  color: var(--danger);
+  margin: 0.7rem;
+}

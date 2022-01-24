@@ -13,7 +13,6 @@ body {
 }
 
 .config {
-  height: inherit;
   grid-column: 2/9;
   display: grid;
   grid-template-rows: repeat(10, 4rem);
@@ -47,15 +46,15 @@ body {
   height: 3rem;
 }
 .start-button {
-  background-color: green;
+  background-color: var(--green);
   grid-row: 7/8;
 }
 .stop-button {
-  background-color: red;
+  background-color: var(--red);
   grid-row: 8/9;
 }
 .test-button {
-  background-color: blue;
+  background-color: var(--blue);
   grid-row: 9/10;
 }
 .downloadButton {

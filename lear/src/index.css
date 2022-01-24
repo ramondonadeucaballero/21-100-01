@@ -8,10 +8,10 @@ body {
 
 :root {
   --primary: #3278cd;
-  --secondary: #b4b4b4;
+  --secondary: #dbd5d5;
   --red: red;
   --unclickable: lightgrey;
-  --green: green;
+  --green: rgb(0, 153, 0);
   --blue: blue;
   --white: white;
   --danger: #eb3f27;
