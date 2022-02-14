@@ -41,3 +41,5 @@ body {
   height: 100%;
   flex-direction: column;
 }
+
+@import url("https://cdn.syncfusion.com/ej2/materials.css");

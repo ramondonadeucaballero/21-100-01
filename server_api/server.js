@@ -149,33 +149,12 @@ app.get("/downloadfile", (req, res) => {
 app.post("/downloadUSBFile", async (req, res) => {
   console.log("/downloadUSBFile");
   try {
-    const { time, linea } = req.body;
+    const { filename } = req.body;
     const usbs = await drive.list();
     usbs.forEach((drive) => {
       if (usbs.length > 1) {
         if (drive["isRemovable"] == true) {
-          console.log(drive["mountpoints"][0]["path"]);
-          const d = new Date();
-          console.log(d);
-          newpath = path.resolve(
-            drive["mountpoints"][0]["path"],
-            d.getDate() +
-              "-" +
-              (parseInt(d.getMonth()) + 1).toString() +
-              "-" +
-              d.getFullYear() +
-              "-" +
-              d.getHours() +
-              "H-" +
-              d.getMinutes() +
-              "M-" +
-              d.getSeconds() +
-              "S-" +
-              time +
-              "-" +
-              linea +
-              ".csv"
-          );
+          newpath = path.resolve(drive["mountpoints"][0]["path"], filename);
           fse.move(
             "C:/Users/ramon/Documents/GitHub/21-100-01/server_api/ESD.csv",
             newpath,
@@ -265,15 +244,25 @@ app.post("/start", (req, res) => {
 
 app.post("/download", (req, res) => {
   console.log("/download");
-  const { time, linea } = req.body;
+  let { start, end } = req.body;
+  if (start > end) {
+    let aux = start;
+    start = end;
+    end = aux;
+  }
+  console.log(start);
+  console.log(end);
   const ls = spawn(
     "C:/Users/ramon/Documents/GitHub/21-100-01/server_api/python3.9.exe",
     [
       "C:/Users/ramon/Documents/GitHub/21-100-01/server_api/download.py",
-      time,
-      linea,
+      start.split("T")[0] + "T00:00:00.000Z",
+      end.split("T")[0] + "T23:59:99.000Z",
     ]
   );
+  ls.on("data", function (data) {
+    console.log(data.toString);
+  });
   ls.on("exit", function () {
     res.sendStatus(200);
     return;

@@ -63,7 +63,7 @@ def pieceDetection():
     global detected
 
     detectTask = nidaqmx.Task("Detect")
-    detectTask.ai_channels.add_ai_voltage_chan("Dev1/ai3,Dev1/ai5")
+    detectTask.ai_channels.add_ai_voltage_chan("Dev1/ai3,Dev1/ai6")
 
     detectTask.start()
     leido = False

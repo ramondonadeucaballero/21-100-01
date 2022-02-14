@@ -45,12 +45,12 @@ header > div {
   margin-left: 1rem;
 }
 
-@media (max-width: 400px) {
+@media (max-width: 600px) {
   .Lear,
   .E7 {
     display: inline-block;
-    height: 1rem;
-    width: 3rem;
+    height: 2rem;
+    width: 6rem;
     margin-left: 1rem;
   }
 }

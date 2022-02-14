@@ -19,7 +19,7 @@ here = os.path.dirname(os.path.abspath(__file__))
 # ============= TESTING VALUES ==============
 detected = True
 daqConnected = True
-detectionConnected = False
+detectionConnected = True
 
 
 # ============= SERIAL VALUES ===============
@@ -31,7 +31,7 @@ from influxdb_client.client.write_api import SYNCHRONOUS
 # You can generate a Token from the "Tokens Tab" in the UI
 token = "sb1mNiKmHmo-SUKLXTgJQDCBxGPFPL5lNQ0CnFCLubdiGKFhBicyOdVpIpqq3OWi5Hew83-4-wy-DAtx6rcnGw=="
 org = "E7"
-bucket = "Lear"
+bucket = "LearOG"
 
 client = InfluxDBClient(url="http://localhost:8086", token=token)
 
@@ -39,6 +39,7 @@ ser = serial.Serial('COM3', 9600)
 
 write_api = client.write_api(write_options=SYNCHRONOUS)
 query_api = client.query_api()
+
 # ============ GLOBAL VALUES ================
 QRList = Queue()
 ESDList = Queue()
@@ -57,7 +58,7 @@ def readQR():
     #Sotres the las QR read to avoid repeated lecutres
     lastdata=-1
     #Value for testing, allows a repeat QR to be read.
-    repeat = True
+    repeat = False
     while True and not stopThreads:
         if(check_stop() == "False"):
             return
@@ -72,7 +73,8 @@ def readQR():
                 lastdata=data
                 QRListLock.acquire()
                 QRList.put(data)
-                QRListLock.release()
+                QRListLock.release()                
+                storeData()
         
 
 
@@ -102,7 +104,10 @@ def storeData():
     global QRListLock
     global QRList
     valueQR = ""
-    if(QRList.qsize() != 0):
+    print(list(ESDList.queue))
+    print(list(QRList.queue))
+    if(QRList.qsize() != 0 and ESDList.qsize() != 0):
+        print("entro")
         QRListLock.acquire()
         valueQR=QRList.get()
         valueQR=valueQR.decode('UTF-8')
@@ -117,7 +122,12 @@ def storeData():
         f= open(os.path.join(here, 'QRtest.txt'),'w')
         f.write(str(valueQR))
         f.close()
-
+    else: 
+        print("no entro")
+    
+    
+    print(list(ESDList.queue))
+    print(list(QRList.queue))
 # ============ CPK Function ====================
 def cpk():
     while True and not stopThreads:
@@ -159,7 +169,7 @@ def pieceDetection():
 
     if(not detectionConnected):
         detectTask = nidaqmx.Task("Detect")
-        detectTask.ai_channels.add_ai_voltage_chan("Dev1/ai3,Dev1/ai5")
+        detectTask.ai_channels.add_ai_voltage_chan("Dev1/ai3,Dev1/ai6")
 
         detectTask.start()
         while True and not stopThreads:
@@ -173,21 +183,20 @@ def pieceDetection():
 
     else:
         detectTask = nidaqmx.Task("Detect")
-        detectTask.ai_channels.add_ai_voltage_chan("Dev1/ai3,Dev1/ai5")
+        detectTask.ai_channels.add_ai_voltage_chan("Dev1/ai3,Dev1/ai6")
 
         detectTask.start()
         while True and not stopThreads:
-            time.sleep(0.5)
+            time.sleep(0.1)
             read = detectTask.read() 
             if(check_stop()  == "False"):
-                return           
-            if(check_stop() ):
-                return
+                return         
             if(read[0] > 5):
+                print("detectado")
                 readESD(detectTask)
                 storeData()
                 while read[0] > 5:
-                    time.sleep(0.5)
+                    time.sleep(0.1)
                     read = detectTask.read()
 
     detectTask.close()

@@ -14,6 +14,26 @@
   margin: 1rem;
 }
 
+.DayPickerInput > input {
+  height: 2.3rem;
+  border-radius: 0.4rem;
+  border-style: solid;
+  border-width: 1px;
+  border-color: var(--secondary);
+  padding: 0 0.5rem;
+  width: 5rem;
+}
+.DayPickerInput {
+  padding: 0 1rem 0 0;
+}
+
+.selectstart,
+.selectend {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
 .last {
   margin-top: 2rem;
   display: flex;
@@ -62,4 +82,39 @@
 .errorMsg {
   color: var(--danger);
   margin: 0.7rem;
+}
+
+@media (max-width: 600px) {
+  .popup {
+    margin: 0;
+  }
+  .last {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+  .last > div {
+    margin: 0.5rem;
+  }
+  .linea {
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+  }
+  .linea > div {
+    margin: 0.5rem;
+  }
+  .donde-descargar {
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+  }
+  .donde-descargar > div {
+    margin: 0.5rem;
+  }
+  .seleccion-descarga > div {
+    margin: 0rem 1rem;
+  }
 }

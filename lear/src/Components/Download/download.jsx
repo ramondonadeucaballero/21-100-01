@@ -5,6 +5,24 @@ import Axios from "axios";
 import axios from "axios";
 import Popup from "../Popup/popup";
 import "./download.css";
+import DayPickerInput from "react-day-picker/DayPickerInput";
+import "react-day-picker/lib/style.css";
+
+import dateFnsFormat from "date-fns/format";
+import dateFnsParse from "date-fns/parse";
+import { DateUtils } from "react-day-picker";
+
+function parseDate(str, format, locale) {
+  const parsed = dateFnsParse(str, "dd/MM/yyyy", new Date(), { locale });
+  if (DateUtils.isDate(parsed)) {
+    return parsed;
+  }
+  return undefined;
+}
+
+function formatDate(date, format, locale) {
+  return dateFnsFormat(date, "dd/MM/yyyy", { locale });
+}
 
 const FileSaver = require("file-saver");
 const FileDownload = require("js-file-download");
@@ -18,8 +36,9 @@ const ip = currentURL.split(":")[1].split("//")[1];
 console.log(ip);
 
 const Download = (props) => {
+  const [startDay, setStartDay] = useState(null);
+  const [endDay, setEndDay] = useState(null);
   const [lastSelect, setLastSelect] = useState(null);
-  const [lineaSelect, setLineaSelect] = useState(null);
   const [locationSelect, setLocationSelect] = useState(null);
   const [timeSelect, setTime] = useState(null);
   const [errorMsg, setError] = useState("");
@@ -27,7 +46,6 @@ const Download = (props) => {
 
   const [openUSB, setOpenUsb] = useState(null);
 
-  const [lineas, setLineas] = useState([]);
   const [locations, setLocations] = useState([
     { value: "Este dispositivo", label: "En este dispositivo" },
     { value: "USB", label: "USB en PC de la maleta" },
@@ -42,34 +60,18 @@ const Download = (props) => {
     setLastSelect(value["value"]);
   };
 
-  const onLineaChange = (value) => {
-    setLineaSelect(value["value"]);
-  };
-
   const onLocationChange = (value) => {
     setLocationSelect(value["value"]);
   };
 
-  const getLines = () => {
-    axios.get("http://" + ip + ":5000/lines").then((res) => {
-      let newConfig = [];
-      newConfig.push({
-        label: "Todas las lineas",
-        value: "all",
-      });
-      for (let i = 0; i < res.data.length; i++) {
-        if (res.data[i] != "")
-          newConfig.push({
-            label: res.data[i],
-            value: res.data[i],
-          });
-      }
-      setLineas(newConfig);
-    });
+  const saveStartDay = (selectedDay, modifiers, dayPickerInput) => {
+    setStartDay(selectedDay);
+  };
+  const saveEndDay = (selectedDay, modifiers, dayPickerInput) => {
+    setEndDay(selectedDay);
   };
 
   useEffect(() => {
-    getLines();
     console.log(openUSB);
     console.log(props.openDownload);
   }, []);
@@ -98,28 +100,29 @@ const Download = (props) => {
 
       <div className="seleccion-descarga">
         <div className="last">
-          <div className="title-field">Descargar ultimos: </div>
-          <input
-            onChange={(e) => {
-              setTime(e.target.value);
-            }}
-          ></input>
-          <Select
-            options={lastOptions}
-            onChange={onLastChange}
-            isSearchable={false}
-          ></Select>
-        </div>
-        <div className="linea">
-          <div className="title-field">Descargar linea: </div>
-          <Select
-            className="select-linea"
-            options={lineas}
-            onChange={onLineaChange}
-          ></Select>
+          <div className="title-field">Descargar datos desde </div>
+          <div className="selectstart">
+            {" "}
+            <DayPickerInput
+              formatDate={formatDate}
+              parseDate={parseDate}
+              onDayChange={saveStartDay}
+              format={"dd/MM/yyyy"}
+            />
+            <div className="title-field"> a las 00:00 hasta </div>
+          </div>
+
+          <div className="selectstart">
+            <DayPickerInput
+              formatDate={formatDate}
+              parseDate={parseDate}
+              onDayChange={saveEndDay}
+            />
+            <div className="title-field"> a las 24:00 </div>
+          </div>
         </div>
         <div className="donde-descargar">
-          Donde quiere descargar los datos?
+          <div className="title-field"> Donde quiere descargar los datos?</div>
           <Select
             className="select-location"
             options={locations}
@@ -131,25 +134,31 @@ const Download = (props) => {
       <div className="errorMsg">{errorMsg}</div>
       <Button
         onClick={() => {
-          if (
-            timeSelect == null ||
-            lastSelect == null ||
-            lineaSelect == null ||
-            locationSelect == null
-          ) {
+          if (startDay == null || endDay == null || locationSelect == null) {
             setError("Faltan campos por completar");
           } else {
             setOpenUsb(true);
             setDownloadMsg("Descargando...");
             Axios.post("http://" + ip + ":5000/download", {
-              time: timeSelect + lastSelect,
-              linea: lineaSelect,
+              start: startDay,
+              end: endDay,
             }).then(() => {
               if (locationSelect == "USB") {
                 setOpenUsb(true);
+                let filename =
+                  startDay.getDate() +
+                  "-" +
+                  (parseInt(startDay.getMonth()) + 1) +
+                  "-" +
+                  startDay.getFullYear() +
+                  "-" +
+                  endDay.getDate() +
+                  "-" +
+                  (parseInt(endDay.getMonth()) + 1) +
+                  "-" +
+                  endDay.getFullYear();
                 Axios.post("http://" + ip + ":5000/downloadUSBFile", {
-                  time: timeSelect + lastSelect,
-                  linea: lineaSelect,
+                  filename: filename + ".csv",
                 }).then((response) => {
                   if (response["status"] == 200) {
                     console.log("Hay USB");
@@ -178,22 +187,17 @@ const Download = (props) => {
                   });
                   const d = new Date();
                   let filename =
-                    d.getDate() +
+                    startDay.getDate() +
                     "-" +
-                    d.getMonth() +
+                    (parseInt(startDay.getMonth()) + 1) +
                     "-" +
-                    d.getFullYear() +
+                    startDay.getFullYear() +
                     "-" +
-                    d.getHours() +
-                    "H-" +
-                    d.getMinutes() +
-                    "M-" +
-                    d.getSeconds() +
-                    "S-" +
-                    timeSelect +
+                    endDay.getDate() +
                     "-" +
-                    lineaSelect;
-                  console.log(filename);
+                    (parseInt(endDay.getMonth()) + 1) +
+                    "-" +
+                    endDay.getFullYear();
                   FileSaver.saveAs(myFile, filename + ".csv");
                   setDownloadMsg("Se ha descargado el archivo.");
                   setTimeout(function () {

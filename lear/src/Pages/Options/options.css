@@ -199,7 +199,7 @@ body {
   margin-bottom: 0.3rem;
 }
 
-@media (max-width: 400px) {
+@media (max-width: 600px) {
   .options-div {
     display: flex;
     flex-direction: column;

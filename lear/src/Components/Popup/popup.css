@@ -15,10 +15,10 @@
 .popupInner {
   z-index: 10000;
   position: relative;
-  padding: 32px;
-  width: 100%;
+  width: max-content;
   max-width: 640px;
   background-color: var(--white);
+  padding: 4rem 2rem;
 }
 
 .popupInner .closeButton {
