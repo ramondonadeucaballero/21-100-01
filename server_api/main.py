@@ -29,9 +29,15 @@ from influxdb_client import InfluxDBClient, Point, WritePrecision
 from influxdb_client.client.write_api import SYNCHRONOUS
 
 # You can generate a Token from the "Tokens Tab" in the UI
-token = "sb1mNiKmHmo-SUKLXTgJQDCBxGPFPL5lNQ0CnFCLubdiGKFhBicyOdVpIpqq3OWi5Hew83-4-wy-DAtx6rcnGw=="
+from datetime import datetime
+
+from influxdb_client import InfluxDBClient, Point, WritePrecision
+from influxdb_client.client.write_api import SYNCHRONOUS
+
+# You can generate a Token from the "Tokens Tab" in the UI
+token = "sTcIzlzmiWy0Ri23Woop1gLF4cSuTwBRyaSH2f530dXfr3dEolQ8u_-0UzJc-rcWp_72MOmtSQKx-lwhffCB5g=="
 org = "E7"
-bucket = "LearOG"
+bucket = "Lear"
 
 client = InfluxDBClient(url="http://localhost:8086", token=token)
 
@@ -112,16 +118,9 @@ def storeData():
         valueQR=QRList.get()
         valueQR=valueQR.decode('UTF-8')
         QRListLock.release()
-        valueESD=ESDList.get()
+        valueESD=ESDList.get()        
         point = Point("Estatica").tag("Line", machineName).field("Estatica", valueESD).field("QR", valueQR).tag("QRCode", str(valueQR))
-       
         write_api.write(bucket, org, point)
-        f= open(os.path.join(here, 'ESDtest.txt'),'w')
-        f.write(str(valueESD))
-        f.close()
-        f= open(os.path.join(here, 'QRtest.txt'),'w')
-        f.write(str(valueQR))
-        f.close()
     else: 
         print("no entro")
     

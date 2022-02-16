@@ -139,7 +139,7 @@ app.get("/status", (req, res) => {
 app.get("/downloadfile", (req, res) => {
   console.log("/downloadfile");
   res.set("Content-Disposition", "inline");
-  res.download("ESD.csv");
+  res.download("C:/Users/ramon/Documents/GitHub/21-100-01/server_api/ESD.csv");
 });
 
 // ============ POST /downloadUSBFile ====================
@@ -250,7 +250,8 @@ app.post("/download", (req, res) => {
     start = end;
     end = aux;
   }
-  console.log(start);
+  start = start.split("T")[0] + "T00:00:00.000Z";
+  (end = end.split("T")[0] + "T23:59:99.000Z"), console.log(start);
   console.log(end);
   const ls = spawn(
     "C:/Users/ramon/Documents/GitHub/21-100-01/server_api/python3.9.exe",
