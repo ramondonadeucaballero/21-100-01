@@ -251,14 +251,15 @@ app.post("/download", (req, res) => {
     end = aux;
   }
   start = start.split("T")[0] + "T00:00:00.000Z";
-  (end = end.split("T")[0] + "T23:59:99.000Z"), console.log(start);
+  end = end.split("T")[0] + "T23:59:59.000Z";
+  console.log(start);
   console.log(end);
   const ls = spawn(
     "C:/Users/ramon/Documents/GitHub/21-100-01/server_api/python3.9.exe",
     [
       "C:/Users/ramon/Documents/GitHub/21-100-01/server_api/download.py",
-      start.split("T")[0] + "T00:00:00.000Z",
-      end.split("T")[0] + "T23:59:99.000Z",
+      start,
+      end,
     ]
   );
   ls.on("data", function (data) {

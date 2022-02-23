@@ -5,7 +5,7 @@ from serial import Serial
 from influxdb import InfluxDBClient
 import os
 
-client = InfluxDBClient(host='localhost',port=8086, username='admin', password='P12345wd!', database='Lear')
+#client = InfluxDBClient(host='localhost',port=8086, username='admin', password='P12345wd!', database='Lear')
 
 
 value = 100
@@ -17,6 +17,7 @@ print(ser)
 while True:
     data = ser.readline()    
     data = data.split(b"\n")[0]
+    print(data)
     if(data != "ERROR\n"):
         if(data!=lastdata):
             lastdata=0

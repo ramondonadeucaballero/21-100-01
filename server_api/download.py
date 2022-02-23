@@ -19,8 +19,8 @@ bucket = "Lear"
 
 client = InfluxDBClient(url="http://localhost:8086", token=token)
 
-start = "2022-02-16T00:00:00.000Z"
-end = "2022-02-17T00:00:00.000Z"
+start = sys.argv[1]
+end = sys.argv[2]
 query = f'from(bucket:"{bucket}") |> range(start: '+start+', stop: '+end+') |> filter(fn: (r) => r._measurement == "Estatica" and r._field == "Estatica"'
 
 query = query + ")"
