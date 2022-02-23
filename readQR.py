@@ -4,6 +4,7 @@ import serial
 from serial import Serial
 from influxdb import InfluxDBClient
 import os
+import nidaqmx
 
 #client = InfluxDBClient(host='localhost',port=8086, username='admin', password='P12345wd!', database='Lear')
 
