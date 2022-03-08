@@ -223,7 +223,22 @@ app.post("/start", (req, res) => {
     const ls = spawn(
       "C:/Users/ramon/Documents/GitHub/21-100-01/server_api/python3.9.exe",
       ["C:/Users/ramon/Documents/GitHub/21-100-01/server_api/main.py"]
+    );    
+    ls.stdout.on('data', function (data){
+      console.log(data.toString())
+    })
+    ls.on("exit", function () {
+      console.log("hola")
+    });
+    /*const ls = spawn(
+      "C:/Users/ramon/Documents/GitHub/21-100-01/server_api/runscript.bat"
     );
+    ls.stdout.on('data', function (data){
+      console.log(data.toString())
+    })
+    ls.on("exit", function () {
+      console.log("hola")
+    });*/
     res.sendStatus("200");
     return;
   } catch (error) {

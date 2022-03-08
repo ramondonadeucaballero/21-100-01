@@ -2,20 +2,23 @@ from datetime import datetime
 import json
 import csv
 import sys
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 from influxdb_client import InfluxDBClient, Point, WritePrecision
 from influxdb_client.client.write_api import SYNCHRONOUS
 
-# You can generate a Token from the "Tokens Tab" in the UI
 from datetime import datetime
 
 from influxdb_client import InfluxDBClient, Point, WritePrecision
 from influxdb_client.client.write_api import SYNCHRONOUS
 
 # You can generate a Token from the "Tokens Tab" in the UI
-token = "sTcIzlzmiWy0Ri23Woop1gLF4cSuTwBRyaSH2f530dXfr3dEolQ8u_-0UzJc-rcWp_72MOmtSQKx-lwhffCB5g=="
-org = "E7"
-bucket = "Lear"
+token = os.getenv('ADMIN_TOKEN')
+org = os.getenv('ORG')
+bucket = os.getenv('BUCKET')
 
 client = InfluxDBClient(url="http://localhost:8086", token=token)
 

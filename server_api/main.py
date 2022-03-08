@@ -1,10 +1,13 @@
 from ast import Store
+from json import load
 import os
 from os import close, read
 from platform import machine
 from random import randint
 from sys import stdout
 import time
+import traceback
+from xml.etree.ElementTree import tostring
 from influxdb.resultset import ResultSet
 from rx import catch
 import serial
@@ -14,6 +17,13 @@ from threading import Lock
 import nidaqmx
 from queue import Queue
 import numpy as np
+from dotenv import load_dotenv
+import tracemalloc
+
+tracemalloc.start()
+
+
+load_dotenv()
 
 here = os.path.dirname(os.path.abspath(__file__))
 
@@ -37,13 +47,17 @@ from influxdb_client import InfluxDBClient, Point, WritePrecision
 from influxdb_client.client.write_api import SYNCHRONOUS
 
 # You can generate a Token from the "Tokens Tab" in the UI
-token = "sTcIzlzmiWy0Ri23Woop1gLF4cSuTwBRyaSH2f530dXfr3dEolQ8u_-0UzJc-rcWp_72MOmtSQKx-lwhffCB5g=="
-org = "E7"
-bucket = "Lear"
+token = os.getenv('ADMIN_TOKEN')
+org = os.getenv('ORG')
+bucket = os.getenv('BUCKET')
+
+print(token)
+print(org)
+print(bucket)
 
 client = InfluxDBClient(url="http://localhost:8086", token=token)
 
-ser = serial.Serial('COM3', 9600)
+#ser = serial.Serial('COM3', 9600)
 
 write_api = client.write_api(write_options=SYNCHRONOUS)
 query_api = client.query_api()
@@ -73,20 +87,19 @@ def readQR():
     while True and not stopThreads:
         if(check_stop() == "False"):
             return
-        if(repeat):
-            time.sleep(2)
         
-        data = ser.readline()
-
-        data = data.split(b"\n")[0]
+        stdout.flush()
+        #data = ser.readline()
+        #data = data.split(b"\n")[0]
+        time.sleep(2)
+        data = b"123"
         if(data != "ERROR"):
             if(data!=lastdata or repeat):
+                print("ReadQR")
                 lastdata=data
                 QRListLock.acquire()
                 QRList.put(data)
-                QRListLock.release()  
-        
-
+                QRListLock.release() 
 
 # ============ ESD READER FUNCITON ====================
 # Data is read from the USB-6000.
@@ -94,8 +107,9 @@ def readQR():
 def readESD(detectTask):
     global readTimes
     global ESDListLock
-
+    
     if daqConnected:
+        print("ReadESD")
         value=0
         for timeValue in readTimes:
             time.sleep(float(timeValue))
@@ -104,9 +118,8 @@ def readESD(detectTask):
 
         value = value / len(readTimes)
         value=(value-3)*200
-        ESDListLock.acquire()
         ESDList.put(value)
-        ESDListLock.release()
+        stdout.flush()
 
     else:
         ESDList.put(randint(10000, 50000)/10000)
@@ -117,20 +130,21 @@ def storeData():
     global QRListLock
     global QRList
     valueQR = ""
+    
     if(QRList.qsize() != 0 and ESDList.qsize() != 0):
-        try:
+        try:   
+            print("Store")   
             QRListLock.acquire()
             valueQR=QRList.get()
             valueQR=valueQR.decode('UTF-8')
             QRListLock.release()
-            ESDListLock.acquire()
-            valueESD=ESDList.get()
-            ESDListLock.release()        
+            valueESD=ESDList.get()      
             point = Point("Estatica").tag("Line", machineName).field("Estatica", valueESD).field("QR", valueQR).tag("QRCode", str(valueQR))
             write_api.write(bucket, org, point)
+            stdout.flush()
         except:
             print("Error")
-            
+          
     
 # ============ CPK Function ====================
 def cpk():
@@ -170,27 +184,20 @@ def cpk():
 def pieceDetection():
     global StoreLock
     detected = True
-    print("hola")
     if(not detectionConnected):
         detectTask = nidaqmx.Task("Detect")
         detectTask.ai_channels.add_ai_voltage_chan("Dev1/ai3,Dev1/ai5")
         detectTask.start()
         while True and not stopThreads:
-            if(check_stop()  == "False"):
+            if(check_stop()  == "False"):                
                 return
-            time.sleep(1.1)
-            if(detected):
-                readESD(detectTask)                               
-                StoreLock.acquire() 
-                print("Entro")              
-                storeData()
-                print("Surto")     
-                StoreLock.release()
-
+            time.sleep(1.9)             
+            readESD(detectTask)                         
+            storeData()               
+            stdout.flush()    
     else:
         detectTask = nidaqmx.Task("Detect")
         detectTask.ai_channels.add_ai_voltage_chan("Dev1/ai3,Dev1/ai5")
-
         detectTask.start()
         while True and not stopThreads:
             time.sleep(0.1)
@@ -198,13 +205,8 @@ def pieceDetection():
             if(check_stop()  == "False"):
                 return         
             if(read[0] > 5):
-                print("detectado")
-                readESD(detectTask)                              
-                StoreLock.acquire() 
-                print("Entro")              
+                readESD(detectTask)            
                 storeData()
-                print("Surto")     
-                StoreLock.release()
                 while read[0] > 5:
                     time.sleep(0.1)
                     read = detectTask.read()

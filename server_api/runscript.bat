@@ -1,0 +1,1 @@
+C:\Users\ramon\Documents\GitHub\21-100-01\server_api\python3.9.exe C:\Users\ramon\Documents\GitHub\21-100-01\server_api\main.py %*
