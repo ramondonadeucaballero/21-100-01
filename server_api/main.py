@@ -31,7 +31,7 @@ here = os.path.dirname(os.path.abspath(__file__))
 # ============= TESTING VALUES ==============
 
 daqConnected = True
-detectionConnected = False
+detectionConnected = True
 
 
 # ============= SERIAL VALUES ===============
@@ -57,7 +57,7 @@ print(bucket)
 
 client = InfluxDBClient(url="http://localhost:8086", token=token)
 
-#ser = serial.Serial('COM3', 9600)
+ser = serial.Serial('COM3', 9600)
 
 write_api = client.write_api(write_options=SYNCHRONOUS)
 query_api = client.query_api()
@@ -83,16 +83,15 @@ def readQR():
     #Sotres the las QR read to avoid repeated lecutres
     lastdata=-1
     #Value for testing, allows a repeat QR to be read.
-    repeat = True
+    repeat = False
     while True and not stopThreads:
         if(check_stop() == "False"):
             return
         
         stdout.flush()
-        #data = ser.readline()
-        #data = data.split(b"\n")[0]
-        time.sleep(2)
-        data = b"123"
+        data = ser.readline()
+        data = data.split(b"\n")[0]
+        time.sleep(0.1)
         if(data != "ERROR"):
             if(data!=lastdata or repeat):
                 print("ReadQR")
