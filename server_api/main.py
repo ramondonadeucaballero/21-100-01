@@ -63,12 +63,12 @@ write_api = client.write_api(write_options=SYNCHRONOUS)
 query_api = client.query_api()
 
 # ============ GLOBAL VALUES ================
-QRList = Queue()
-ESDList = Queue()
+QRValue = None
+ESDValue = None
 readTimes = []
 machineName = ""
-QRListLock = Lock()
-ESDListLock = Lock()
+QRValueLock = Lock()
+ESDValueLock = Lock()
 StoreLock = Lock()
 
 
@@ -76,10 +76,11 @@ StoreLock = Lock()
 # Reads the data from QR reader and stores it in a Queue
 
 def readQR():
-    global QRList
-    global QRListLock
+    global QRValue
+    global QRValueLock
     global stopThreads
     global StoreLock
+    global ESDValue
     #Sotres the las QR read to avoid repeated lecutres
     lastdata=-1
     #Value for testing, allows a repeat QR to be read.
@@ -96,16 +97,21 @@ def readQR():
             if(data!=lastdata or repeat):
                 print("ReadQR")
                 lastdata=data
-                QRListLock.acquire()
-                QRList.put(data)
-                QRListLock.release() 
+                QRValueLock.acquire()
+                QRValue = data
+                QRValueLock.release()
+                if(ESDValue is not None):
+                    StoreLock.acquire()
+                    storeData()
+                    StoreLock.release()
 
 # ============ ESD READER FUNCITON ====================
 # Data is read from the USB-6000.
 # The ESDconfig file declares how many readings are done, and the time intervals between them.
 def readESD(detectTask):
     global readTimes
-    global ESDListLock
+    global ESDValueLock
+    global ESDValue
     
     if daqConnected:
         print("ReadESD")
@@ -117,27 +123,29 @@ def readESD(detectTask):
 
         value = value / len(readTimes)
         value=(value-3)*200
-        ESDList.put(value)
+        ESDValue=value
         stdout.flush()
 
     else:
-        ESDList.put(randint(10000, 50000)/10000)
+        ESDValue=(randint(10000, 50000)/10000)
 
 # ============ Store Data Function ====================
 # An ESD Value and a QRcode are taken, joined into a json and uploaded to the DB
 def storeData():
-    global QRListLock
-    global QRList
+    global QRValueLock
+    global QRValue
     valueQR = ""
     
-    if(QRList.qsize() != 0 and ESDList.qsize() != 0):
+    if(QRValue is not None and ESDValue is not None):
         try:   
             print("Store")   
-            QRListLock.acquire()
-            valueQR=QRList.get()
+            QRValueLock.acquire()
+            valueQR=QRValue
             valueQR=valueQR.decode('UTF-8')
-            QRListLock.release()
-            valueESD=ESDList.get()      
+            QRValue=None
+            QRValueLock.release()
+            valueESD=ESDValue
+            valueESD=None      
             point = Point("Estatica").tag("Line", machineName).field("Estatica", valueESD).field("QR", valueQR).tag("QRCode", str(valueQR))
             write_api.write(bucket, org, point)
             stdout.flush()
@@ -204,8 +212,11 @@ def pieceDetection():
             if(check_stop()  == "False"):
                 return         
             if(read[0] > 5):
-                readESD(detectTask)            
-                storeData()
+                readESD(detectTask)                   
+                if(QRValue is not None):
+                    StoreLock.acquire()
+                    storeData()
+                    StoreLock.release()  
                 while read[0] > 5:
                     time.sleep(0.1)
                     read = detectTask.read()
@@ -252,8 +263,10 @@ if __name__ == '__main__':
     cpkThread.start()
 
     while check_stop()  == "True":
-       time.sleep(1)
+       time.sleep(2)
 
     stopThreads = True
+    ser.cancel_read()
+    ser.close()
     
 

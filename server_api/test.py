@@ -107,6 +107,7 @@ if __name__ == '__main__':
     while check_stop()  == "Test":
        time.sleep(1)
     
+    ser.cancel_read()
     f= open(os.path.join(here, 'running.txt'),'w')
     f.write("False")
     f.close()
