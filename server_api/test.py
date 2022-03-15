@@ -68,10 +68,12 @@ def pieceDetection():
     detectTask.start()
     leido = False
     while True and not leido and check_stop() == "Test":
-        time.sleep(0.5)
         read = detectTask.read()
         print("Leyendo Datos")
-        if(read[0] > 5):
+        if(read[0] > 5):           
+            readQRThread = threading.Thread(target=readQR)
+            readQRThread.start()   
+            readESD(detectTask)  
             print("Leido")
             readESD(detectTask)
             leido=True
@@ -99,8 +101,6 @@ def loadConf():
 if __name__ == '__main__':
     stopThreads = False
     loadConf()
-    readQRThread = threading.Thread(target=readQR)
-    readQRThread.start()
     detectionThread = threading.Thread(target=pieceDetection)
     detectionThread.start()
     

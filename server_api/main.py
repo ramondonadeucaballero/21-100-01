@@ -81,29 +81,19 @@ def readQR():
     global stopThreads
     global StoreLock
     global ESDValue
-    #Sotres the las QR read to avoid repeated lecutres
-    lastdata=-1
-    #Value for testing, allows a repeat QR to be read.
-    repeat = False
-    while True and not stopThreads:
-        if(check_stop() == "False"):
-            return
-        
-        stdout.flush()
-        data = ser.readline()
-        data = data.split(b"\n")[0]
-        time.sleep(0.1)
-        if(data != "ERROR"):
-            if(data!=lastdata or repeat):
-                print("ReadQR")
-                lastdata=data
-                QRValueLock.acquire()
-                QRValue = data
-                QRValueLock.release()
-                if(ESDValue is not None):
-                    StoreLock.acquire()
-                    storeData()
-                    StoreLock.release()
+    
+    stdout.flush()
+    data = ser.readline()
+    data = data.split(b"\n")[0]
+    if(data != "ERROR" or data != b''):
+        print("ReadQR")
+        QRValueLock.acquire()
+        QRValue = data
+        QRValueLock.release()
+        if(ESDValue is not None):
+            StoreLock.acquire()
+            storeData()
+            StoreLock.release()
 
 # ============ ESD READER FUNCITON ====================
 # Data is read from the USB-6000.
@@ -134,6 +124,7 @@ def readESD(detectTask):
 def storeData():
     global QRValueLock
     global QRValue
+    global ESDValue
     valueQR = ""
     
     if(QRValue is not None and ESDValue is not None):
@@ -142,10 +133,8 @@ def storeData():
             QRValueLock.acquire()
             valueQR=QRValue
             valueQR=valueQR.decode('UTF-8')
-            QRValue=None
             QRValueLock.release()
             valueESD=ESDValue
-            valueESD=None      
             point = Point("Estatica").tag("Line", machineName).field("Estatica", valueESD).field("QR", valueQR).tag("QRCode", str(valueQR))
             write_api.write(bucket, org, point)
             stdout.flush()
@@ -198,8 +187,13 @@ def pieceDetection():
         while True and not stopThreads:
             if(check_stop()  == "False"):                
                 return
-            time.sleep(1.9)             
-            readESD(detectTask)                         
+            time.sleep(1.9)     
+            ser.cancel_read()
+            ESDValue = None
+            QRValue = None                
+            readQRThread = threading.Thread(target=readQR)
+            readQRThread.start()   
+            readESD(detectTask)                          
             storeData()               
             stdout.flush()    
     else:
@@ -212,7 +206,12 @@ def pieceDetection():
             if(check_stop()  == "False"):
                 return         
             if(read[0] > 5):
-                readESD(detectTask)                   
+                ser.cancel_read()
+                ESDValue = None
+                QRValue = None                
+                readQRThread = threading.Thread(target=readQR)
+                readQRThread.start()   
+                readESD(detectTask)                
                 if(QRValue is not None):
                     StoreLock.acquire()
                     storeData()
@@ -255,8 +254,6 @@ def check_stop() :
 if __name__ == '__main__':
     stopThreads = False
     loadConf()
-    readQRThread = threading.Thread(target=readQR)
-    readQRThread.start()
     detectionThread = threading.Thread(target=pieceDetection)
     detectionThread.start()
     cpkThread = threading.Thread(target=cpk)
