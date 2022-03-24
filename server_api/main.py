@@ -31,7 +31,7 @@ here = os.path.dirname(os.path.abspath(__file__))
 # ============= TESTING VALUES ==============
 
 daqConnected = True
-detectionConnected = True
+detectionConnected = False
 
 
 # ============= SERIAL VALUES ===============
@@ -63,7 +63,7 @@ write_api = client.write_api(write_options=SYNCHRONOUS)
 query_api = client.query_api()
 
 # ============ GLOBAL VALUES ================
-QRValue = None
+QRValue = b""
 ESDValue = None
 readTimes = []
 machineName = ""
@@ -82,18 +82,23 @@ def readQR():
     global StoreLock
     global ESDValue
     
+    print("ESD DESDE QR INICIO: " + str(ESDValue))
     stdout.flush()
     data = ser.readline()
     data = data.split(b"\n")[0]
-    if(data != "ERROR" or data != b''):
-        print("ReadQR")
-        QRValueLock.acquire()
-        QRValue = data
-        QRValueLock.release()
-        if(ESDValue is not None):
-            StoreLock.acquire()
-            storeData()
-            StoreLock.release()
+    print(data)
+    if(check_stop() == "True"):
+        if(data != "ERROR" or data != b''):
+            print("ReadQR")
+            QRValueLock.acquire()
+            QRValue = data
+            QRValueLock.release()
+            print("ESD VALUE DESDE QR = "+ str(ESDValue))
+            if(ESDValue is not None):
+                StoreLock.acquire()
+                print("Store desde QR")
+                storeData()
+                StoreLock.release()
 
 # ============ ESD READER FUNCITON ====================
 # Data is read from the USB-6000.
@@ -125,9 +130,11 @@ def storeData():
     global QRValueLock
     global QRValue
     global ESDValue
-    valueQR = ""
-    
-    if(QRValue is not None and ESDValue is not None):
+
+    valueQR=QRValue
+    print("QRValue = " +  str(valueQR))
+    print("ESDValue = " + str(ESDValue))
+    if(QRValue != b"" and ESDValue is not None):
         try:   
             print("Store")   
             QRValueLock.acquire()
@@ -140,7 +147,8 @@ def storeData():
             stdout.flush()
         except:
             print("Error")
-          
+    else:
+        print("No se guarda")     
     
 # ============ CPK Function ====================
 def cpk():
@@ -150,10 +158,10 @@ def cpk():
         time.sleep(1)
         USL = 100
         LSL = -100
-
+        print("Contando CPK")
+        stdout.flush()
         query = f'from(bucket:"{bucket}") |> range(start: -1d) |> filter(fn: (r) => r._measurement == "Estatica" and r._field == "Estatica" and r.Line == "'+machineName+'")'
         tables = client.query_api().query(query, org=org)
-        
         if(len(tables)):
             data_list=[]
             for x in range(len(tables)):
@@ -179,6 +187,8 @@ def cpk():
 # Once the value is read, the program awaits for the detection sensor to stop giving signal
 def pieceDetection():
     global StoreLock
+    global QRValue
+    global ESDValue
     detected = True
     if(not detectionConnected):
         detectTask = nidaqmx.Task("Detect")
@@ -187,10 +197,12 @@ def pieceDetection():
         while True and not stopThreads:
             if(check_stop()  == "False"):                
                 return
-            time.sleep(1.9)     
+            time.sleep(10)     
             ser.cancel_read()
+            ser.read_all()
             ESDValue = None
-            QRValue = None                
+            print(ESDValue)
+            QRValue = b""                
             readQRThread = threading.Thread(target=readQR)
             readQRThread.start()   
             readESD(detectTask)                          
@@ -207,19 +219,22 @@ def pieceDetection():
                 return         
             if(read[0] > 5):
                 ser.cancel_read()
+                ser.flushInput()
                 ESDValue = None
-                QRValue = None                
+                QRValue = b""                 
                 readQRThread = threading.Thread(target=readQR)
                 readQRThread.start()   
-                readESD(detectTask)                
-                if(QRValue is not None):
-                    StoreLock.acquire()
+                readESD(detectTask)                              
+                if(QRValue != b""):
+                    StoreLock.acquire()                    
+                    print("Store desde ESD")
                     storeData()
                     StoreLock.release()  
                 while read[0] > 5:
                     time.sleep(0.1)
                     read = detectTask.read()
 
+    detectTask.stop()
     detectTask.close()
 
 

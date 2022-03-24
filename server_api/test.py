@@ -4,6 +4,7 @@ from serial import Serial
 import nidaqmx
 import os
 import threading
+from sys import stdout
 
 ser = serial.Serial('COM3', 9600)
     
@@ -17,6 +18,7 @@ def check_stop() :
     file = open(os.path.join(here, "running.txt"))
     closed=(file.read())
     file.close()
+    stdout.flush()
     if(ESD and QR):
         print("done")
         return "False"
@@ -70,7 +72,8 @@ def pieceDetection():
     while True and not leido and check_stop() == "Test":
         read = detectTask.read()
         print("Leyendo Datos")
-        if(read[0] > 5):           
+        if(read[0] > 5):      
+            ser.flushInput()     
             readQRThread = threading.Thread(target=readQR)
             readQRThread.start()   
             readESD(detectTask)  
@@ -79,6 +82,7 @@ def pieceDetection():
             leido=True
 
     detectTask.close()
+    print("Closed")
     
 # ============ Load Configuration ====================
 # Reads the configuration file and then it's loaded into the script
@@ -102,13 +106,12 @@ if __name__ == '__main__':
     stopThreads = False
     loadConf()
     detectionThread = threading.Thread(target=pieceDetection)
-    detectionThread.start()
-    
+    detectionThread.start()    
     while check_stop()  == "Test":
        time.sleep(1)
     
-    ser.cancel_read()
-    f= open(os.path.join(here, 'running.txt'),'w')
+    
+    f= open(os.path.join(here, 'running.txt'),'w') 
     f.write("False")
     f.close()
     ser.close()
