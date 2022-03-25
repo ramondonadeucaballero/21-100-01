@@ -31,7 +31,7 @@ here = os.path.dirname(os.path.abspath(__file__))
 # ============= TESTING VALUES ==============
 
 daqConnected = True
-detectionConnected = False
+detectionConnected = True
 
 
 # ============= SERIAL VALUES ===============
@@ -134,7 +134,7 @@ def storeData():
     valueQR=QRValue
     print("QRValue = " +  str(valueQR))
     print("ESDValue = " + str(ESDValue))
-    if(QRValue != b"" and ESDValue is not None):
+    if(QRValue != b'' and ESDValue is not None):
         try:   
             print("Store")   
             QRValueLock.acquire()

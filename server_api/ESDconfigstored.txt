@@ -1,2 +1,2 @@
-Line 1:0.3:0.3:0.3
 Test:3
+ICT polivalente T6A:1

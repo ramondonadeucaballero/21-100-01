@@ -261,7 +261,7 @@ app.post("/download", (req, res) => {
   console.log(start);
   console.log(end);
   const ls = spawn(
-    "C:/Users/ramon/Documents/GitHub/21-100-01/server_api/python3.9.exe",
+    "python",
     [
       "C:/Users/ramon/Documents/GitHub/21-100-01/server_api/download.py",
       start,
@@ -413,13 +413,7 @@ app.post("/newLine", (req, res) => {
         );
         data = newName + "\n";
         console.log(data);
-        fs.appendFile(
-          "C:/Users/ramon/Documents/GitHub/21-100-01/server_api/lines.txt",
-          data,
-          (err) => {
-            if (err) console.log(err);
-          }
-        );
+        
         res.sendStatus(200);
         return;
       }

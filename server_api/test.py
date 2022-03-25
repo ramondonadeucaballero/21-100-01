@@ -1,3 +1,4 @@
+from socket import timeout
 import time
 import serial
 from serial import Serial
@@ -6,7 +7,7 @@ import os
 import threading
 from sys import stdout
 
-ser = serial.Serial('COM3', 9600)
+ser = serial.Serial('COM3', 9600, timeout=5)
     
 ESD = False
 QR = False
