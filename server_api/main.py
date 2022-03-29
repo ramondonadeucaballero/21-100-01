@@ -31,7 +31,7 @@ here = os.path.dirname(os.path.abspath(__file__))
 # ============= TESTING VALUES ==============
 
 daqConnected = True
-detectionConnected = True
+detectionConnected = False
 
 
 # ============= SERIAL VALUES ===============
@@ -94,12 +94,12 @@ def readQR():
             QRValue = data
             QRValueLock.release()
             print("ESD VALUE DESDE QR = "+ str(ESDValue))
+            StoreLock.acquire()
             if(ESDValue is not None):
-                StoreLock.acquire()
                 print("Store desde QR")
                 storeData()
-                StoreLock.release()
-
+            StoreLock.release()
+            
 # ============ ESD READER FUNCITON ====================
 # Data is read from the USB-6000.
 # The ESDconfig file declares how many readings are done, and the time intervals between them.
@@ -205,8 +205,10 @@ def pieceDetection():
             QRValue = b""                
             readQRThread = threading.Thread(target=readQR)
             readQRThread.start()   
-            readESD(detectTask)                          
-            storeData()               
+            readESD(detectTask)
+            StoreLock.acquire()                          
+            storeData()       
+            StoreLock.release()        
             stdout.flush()    
     else:
         detectTask = nidaqmx.Task("Detect")
@@ -224,12 +226,12 @@ def pieceDetection():
                 QRValue = b""                 
                 readQRThread = threading.Thread(target=readQR)
                 readQRThread.start()   
-                readESD(detectTask)                              
-                if(QRValue != b""):
-                    StoreLock.acquire()                    
+                readESD(detectTask)   
+                StoreLock.acquire()                         
+                if(QRValue != b""):                   
                     print("Store desde ESD")
                     storeData()
-                    StoreLock.release()  
+                StoreLock.release()  
                 while read[0] > 5:
                     time.sleep(0.1)
                     read = detectTask.read()

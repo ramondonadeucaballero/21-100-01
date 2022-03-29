@@ -268,9 +268,9 @@ app.post("/download", (req, res) => {
       end,
     ]
   );
-  ls.on("data", function (data) {
-    console.log(data.toString);
-  });
+  ls.stdout.on('data', function (data){
+    console.log(data.toString())
+  })
   ls.on("exit", function () {
     res.sendStatus(200);
     return;
