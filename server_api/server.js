@@ -318,6 +318,9 @@ app.post("/test", (req, res) => {
     "python",
     ["./test.py"]
   );
+  ls.stdout.on('data', function (data){
+    console.log(data.toString())
+  })
   ls.on("exit", function () {
     res.sendStatus(200);
     return;

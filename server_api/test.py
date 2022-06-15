@@ -1,4 +1,5 @@
 from socket import timeout
+from tabnanny import check
 import time
 import serial
 from serial import Serial
@@ -7,7 +8,7 @@ import os
 import threading
 from sys import stdout
 
-ser = serial.Serial('COM3', 9600, timeout=5)
+ser = serial.Serial('COM3', 9600, timeout=10)
     
 ESD = False
 QR = False
@@ -31,11 +32,13 @@ def check_stop() :
 
 def readQR():
     global QR
+    print("read QR")
     data = ser.readline()
-    data = data.split(b"\n")[0].decode()
+    data = data.split(b"\n")[0].decode()    
     f= open(os.path.join(here, 'QRtest.txt'), 'w')
     f.write(str(data))
     f.close()
+    ser.close()
     QR=True
                 
 # ============ ESD READER FUNCITON ====================
@@ -72,14 +75,12 @@ def pieceDetection():
     leido = False
     while True and not leido and check_stop() == "Test":
         read = detectTask.read()
-        print("Leyendo Datos")
         if(read[0] > 5):      
             ser.flushInput()     
             readQRThread = threading.Thread(target=readQR)
             readQRThread.start()   
             readESD(detectTask)  
             print("Leido")
-            readESD(detectTask)
             leido=True
 
     detectTask.close()
@@ -115,5 +116,4 @@ if __name__ == '__main__':
     f= open(os.path.join(here, 'running.txt'),'w') 
     f.write("False")
     f.close()
-    ser.close()
     

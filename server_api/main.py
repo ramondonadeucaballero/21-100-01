@@ -31,7 +31,7 @@ here = os.path.dirname(os.path.abspath(__file__))
 # ============= TESTING VALUES ==============
 
 daqConnected = True
-detectionConnected = False
+detectionConnected = True
 
 
 # ============= SERIAL VALUES ===============
@@ -56,8 +56,7 @@ print(org)
 print(bucket)
 
 client = InfluxDBClient(url="http://localhost:8086", token=token)
-
-ser = serial.Serial('COM3', 9600)
+ser = serial.Serial('COM3', 9600, timeout = 5)
 
 write_api = client.write_api(write_options=SYNCHRONOUS)
 query_api = client.query_api()
@@ -99,6 +98,8 @@ def readQR():
                 print("Store desde QR")
                 storeData()
             StoreLock.release()
+    
+    
             
 # ============ ESD READER FUNCITON ====================
 # Data is read from the USB-6000.
@@ -238,6 +239,7 @@ def pieceDetection():
 
     detectTask.stop()
     detectTask.close()
+    ser.close()
 
 
 # ============ Load Configuration ====================
@@ -280,7 +282,5 @@ if __name__ == '__main__':
        time.sleep(2)
 
     stopThreads = True
-    ser.cancel_read()
-    ser.close()
     
 
