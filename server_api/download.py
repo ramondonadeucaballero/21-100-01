@@ -1,9 +1,10 @@
-from datetime import datetime
+from datetime import datetime, timezone, tzinfo
 import json
 import csv
 import sys
 from dotenv import load_dotenv
 import os
+from sys import stdout
 
 load_dotenv()
 
@@ -27,6 +28,8 @@ end = sys.argv[2]
 query = f'from(bucket:"{bucket}") |> range(start: '+start+', stop: '+end+') |> filter(fn: (r) => r._measurement == "Estatica" and r._field == "Estatica"'
 
 query = query + ")"
+stdout.flush()
+
 tables = client.query_api().query(query, org=org)
 print(tables)
 with open ("ESD.csv",'w', newline="") as csvfile:
@@ -36,5 +39,6 @@ with open ("ESD.csv",'w', newline="") as csvfile:
     for table in tables:
         for thing in table:
             time = thing["_time"]
-            filewritter.writerow([time.strftime("%d-%m-%Y %H:%M:%S %Z"),thing["QRCode"],thing["Line"],str(thing["_value"]).replace(".", ",")])
+            time = time.replace(tzinfo=timezone.utc).astimezone(tz=None)
+            filewritter.writerow([time.strftime("%d-%m-%Y %H:%M:%S"),thing["QRCode"],thing["Line"],str(thing["_value"]).replace(".", ",")])
 

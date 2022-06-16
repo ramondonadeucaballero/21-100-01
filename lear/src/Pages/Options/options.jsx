@@ -353,7 +353,6 @@ const Options = () => {
             </div>
           </div>
           <div
-            className="start-button"
             className={
               ScriptRunning == "False"
                 ? "start-button buttons"
@@ -372,14 +371,13 @@ const Options = () => {
             Start
           </div>
           <div
-            className="stop-button"
             className={
-              ScriptRunning == "True"
+              ScriptRunning == "True" || ScriptRunning == "Test"
                 ? "stop-button buttons"
                 : "unclickable-stop-button buttons"
             }
             onClick={() => {
-              if (ScriptRunning == "True") {
+              if (ScriptRunning == "True" || ScriptRunning == "Test") {
                 axios.get("http://" + ip + ":5000/stop");
                 setScriptRunning("False");
               }

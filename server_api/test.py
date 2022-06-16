@@ -1,11 +1,14 @@
+from socket import timeout
+from tabnanny import check
 import time
 import serial
 from serial import Serial
 import nidaqmx
 import os
 import threading
+from sys import stdout
 
-ser = serial.Serial('COM3', 9600)
+ser = serial.Serial('COM3', 9600, timeout=10)
     
 ESD = False
 QR = False
@@ -17,6 +20,7 @@ def check_stop() :
     file = open(os.path.join(here, "running.txt"))
     closed=(file.read())
     file.close()
+    stdout.flush()
     if(ESD and QR):
         print("done")
         return "False"
@@ -28,11 +32,13 @@ def check_stop() :
 
 def readQR():
     global QR
+    print("read QR")
     data = ser.readline()
-    data = data.split(b"\n")[0].decode()
+    data = data.split(b"\n")[0].decode()    
     f= open(os.path.join(here, 'QRtest.txt'), 'w')
     f.write(str(data))
     f.close()
+    ser.close()
     QR=True
                 
 # ============ ESD READER FUNCITON ====================
@@ -68,15 +74,17 @@ def pieceDetection():
     detectTask.start()
     leido = False
     while True and not leido and check_stop() == "Test":
-        time.sleep(0.5)
         read = detectTask.read()
-        print("Leyendo Datos")
-        if(read[0] > 5):
+        if(read[0] > 5):      
+            ser.flushInput()     
+            readQRThread = threading.Thread(target=readQR)
+            readQRThread.start()   
+            readESD(detectTask)  
             print("Leido")
-            readESD(detectTask)
             leido=True
 
     detectTask.close()
+    print("Closed")
     
 # ============ Load Configuration ====================
 # Reads the configuration file and then it's loaded into the script
@@ -99,16 +107,13 @@ def loadConf():
 if __name__ == '__main__':
     stopThreads = False
     loadConf()
-    readQRThread = threading.Thread(target=readQR)
-    readQRThread.start()
     detectionThread = threading.Thread(target=pieceDetection)
-    detectionThread.start()
-    
+    detectionThread.start()    
     while check_stop()  == "Test":
        time.sleep(1)
     
-    f= open(os.path.join(here, 'running.txt'),'w')
+    
+    f= open(os.path.join(here, 'running.txt'),'w') 
     f.write("False")
     f.close()
-    ser.close()
     

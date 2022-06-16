@@ -221,24 +221,15 @@ app.post("/start", (req, res) => {
       }
     );
     const ls = spawn(
-      "C:/Users/ramon/Documents/GitHub/21-100-01/server_api/python3.9.exe",
+      "python",
       ["C:/Users/ramon/Documents/GitHub/21-100-01/server_api/main.py"]
     );    
     ls.stdout.on('data', function (data){
       console.log(data.toString())
     })
     ls.on("exit", function () {
-      console.log("hola")
+      console.log("Exit Script")
     });
-    /*const ls = spawn(
-      "C:/Users/ramon/Documents/GitHub/21-100-01/server_api/runscript.bat"
-    );
-    ls.stdout.on('data', function (data){
-      console.log(data.toString())
-    })
-    ls.on("exit", function () {
-      console.log("hola")
-    });*/
     res.sendStatus("200");
     return;
   } catch (error) {
@@ -270,16 +261,16 @@ app.post("/download", (req, res) => {
   console.log(start);
   console.log(end);
   const ls = spawn(
-    "C:/Users/ramon/Documents/GitHub/21-100-01/server_api/python3.9.exe",
+    "python",
     [
       "C:/Users/ramon/Documents/GitHub/21-100-01/server_api/download.py",
       start,
       end,
     ]
   );
-  ls.on("data", function (data) {
-    console.log(data.toString);
-  });
+  ls.stdout.on('data', function (data){
+    console.log(data.toString())
+  })
   ls.on("exit", function () {
     res.sendStatus(200);
     return;
@@ -324,9 +315,12 @@ app.post("/test", (req, res) => {
     }
   );
   const ls = spawn(
-    "C:/Users/ramon/Documents/GitHub/21-100-01/server_api/python3.9.exe",
+    "python",
     ["./test.py"]
   );
+  ls.stdout.on('data', function (data){
+    console.log(data.toString())
+  })
   ls.on("exit", function () {
     res.sendStatus(200);
     return;
@@ -422,13 +416,7 @@ app.post("/newLine", (req, res) => {
         );
         data = newName + "\n";
         console.log(data);
-        fs.appendFile(
-          "C:/Users/ramon/Documents/GitHub/21-100-01/server_api/lines.txt",
-          data,
-          (err) => {
-            if (err) console.log(err);
-          }
-        );
+        
         res.sendStatus(200);
         return;
       }
