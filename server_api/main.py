@@ -92,6 +92,7 @@ def readQR():
             QRValueLock.acquire()
             QRValue = data
             QRValueLock.release()
+            print("read Finished")
             print("ESD VALUE DESDE QR = "+ str(ESDValue))
             StoreLock.acquire()
             if(ESDValue is not None):
@@ -159,7 +160,6 @@ def cpk():
         time.sleep(1)
         USL = 100
         LSL = -100
-        print("Contando CPK")
         stdout.flush()
         query = f'from(bucket:"{bucket}") |> range(start: -1d) |> filter(fn: (r) => r._measurement == "Estatica" and r._field == "Estatica" and r.Line == "'+machineName+'")'
         tables = client.query_api().query(query, org=org)
@@ -233,7 +233,7 @@ def pieceDetection():
                     print("Store desde ESD")
                     storeData()
                 StoreLock.release()  
-                while read[0] > 5:
+                while read[0] > 5 and not stopThreads:
                     time.sleep(0.1)
                     read = detectTask.read()
 
@@ -283,4 +283,5 @@ if __name__ == '__main__':
 
     stopThreads = True
     
+    ser.close()
 

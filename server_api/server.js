@@ -295,7 +295,7 @@ app.post("/test", (req, res) => {
   }
   fs.writeFile(
     "C:/Users/ramon/Documents/GitHub/21-100-01/server_api/QRtest.txt",
-    " ",
+    "QR no Leido",
     (err) => {
       if (err) console.log(err);
     }

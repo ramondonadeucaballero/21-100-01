@@ -1,2 +1,2 @@
 ICT polivalente T6A:1
-BCP21_PnP:0.5
+BCP21_PnP:0.5:0.5:0.5:0.5

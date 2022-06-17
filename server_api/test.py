@@ -34,10 +34,14 @@ def readQR():
     global QR
     print("read QR")
     data = ser.readline()
+    print("read Finished")
     data = data.split(b"\n")[0].decode()    
-    f= open(os.path.join(here, 'QRtest.txt'), 'w')
-    f.write(str(data))
-    f.close()
+    print(data)
+    if(data != ""):
+        print("Entra?")
+        f= open(os.path.join(here, 'QRtest.txt'), 'w')
+        f.write(str(data))
+        f.close()
     ser.close()
     QR=True
                 
@@ -116,4 +120,5 @@ if __name__ == '__main__':
     f= open(os.path.join(here, 'running.txt'),'w') 
     f.write("False")
     f.close()
+    ser.close()
     
